@@ -1,28 +1,36 @@
 from PatchEmbedding import PatchEmbedding
-from torch import zeros, cat, Tensor
+from torch import zeros, cat, Tensor, save, load
+from pytorch_lightning import LightningModule
+from os.path import isfile
 from torch.nn import \
-    Module, \
     Parameter, \
     TransformerEncoder, \
     TransformerEncoderLayer, \
     Linear, \
     Embedding
+from torch.nn.functional import cross_entropy
+from torch.optim import Adam
 
 
-class UnifiedTransformer(Module):
+class UnifiedTransformer(LightningModule):
     def __init__(
             self,
             image_size: int,
             num_tokens: int,
+            sequence_length: int,
             num_encoder_layers: int,
             num_classes: int,
             patch_size: int = 16,
             num_heads: int = 12,
             embed_dim: int = 768,
-            dropout: float = 0.1
+            dropout: float = 0.1,
+            learning_rate: float = 1E-3,
+            filename: str = 'model.pt'
     ) -> None:
 
         super().__init__()
+
+        self.filename = filename
 
         # the embedding dimension is used throughout the entire model
         # it is a hyperparameter of the transformer encoder layer
@@ -60,7 +68,7 @@ class UnifiedTransformer(Module):
         self.positional_embedding = Parameter(
             zeros(
                 1,
-                self.patch_embed.num_patches + num_tokens + 1,
+                self.patch_embed.num_patches + sequence_length + 1,
                 embed_dim
             )
         )
@@ -78,10 +86,11 @@ class UnifiedTransformer(Module):
 
         self.MLP_head = Linear(embed_dim, num_classes)
 
-    def forward(self, image: Tensor, text: Tensor) -> Tensor:
+        self.learning_rate = learning_rate
 
+    def forward(self, images: Tensor, text: Tensor) -> Tensor:
         # create patch embeddings
-        image_patches = self.patch_embed(image)
+        image_patches = self.patch_embed(images)
 
         # embed the text sequence
         text_embedded = self.word_embed(text)
@@ -106,3 +115,44 @@ class UnifiedTransformer(Module):
 
         # lastly, feed it into the MLP
         return self.MLP_head(final_class_token)
+
+    def configure_optimizers(self):
+        # TODO: scheduler?
+        return Adam(self.parameters(), lr=self.learning_rate)
+
+    def step(self, batch: Tensor) -> Tensor:
+        # get columns of batch
+        (images, text), targets = list(zip(*batch))
+
+        # we use cross entropy as our loss function
+        return cross_entropy(self.forward(images, text), targets)
+
+    def training_step(self, batch: Tensor) -> Tensor:
+        loss = self.step(batch)
+
+        self.log('train_loss', loss)
+
+        return loss
+
+    def validation_step(self, batch: Tensor) -> Tensor:
+        loss = self.step(batch)
+
+        self.log('val_loss', loss)
+
+        return loss
+
+    def test_step(self, batch: Tensor) -> Tensor:
+        loss = self.step(batch)
+
+        self.log('test_loss', loss)
+
+        return loss
+
+    def save(self) -> None:
+        print("Saving model at: " + self.filename)
+        save(self.state_dict(), self.filename)
+
+    def load(self) -> None:
+        if isfile(self.filename):
+            print("Loading model from: " + self.filename)
+            self.approximation_function.load_state_dict(load(self.filename))
