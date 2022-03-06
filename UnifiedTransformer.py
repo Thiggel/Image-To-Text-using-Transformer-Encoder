@@ -9,7 +9,11 @@ from torch.nn import \
     Linear, \
     Embedding
 from torch.nn.functional import cross_entropy
-from torch.optim import Adam
+from torch.optim import Adam, Optimizer
+from torch.optim.lr_scheduler import ReduceLROnPlateau
+from pytorch_lightning.utilities.types import LRSchedulerType
+from pytorch_lightning.callbacks.lr_monitor import LearningRateMonitor
+from typing import Tuple, List
 
 
 class UnifiedTransformer(LightningModule):
@@ -24,7 +28,7 @@ class UnifiedTransformer(LightningModule):
             num_heads: int = 12,
             embed_dim: int = 768,
             dropout: float = 0.1,
-            learning_rate: float = 1E-3,
+            learning_rate: float = 0.1,
             filename: str = 'model.pt'
     ) -> None:
 
@@ -116,9 +120,15 @@ class UnifiedTransformer(LightningModule):
         # lastly, feed it into the MLP
         return self.MLP_head(final_class_token)
 
-    def configure_optimizers(self):
-        # TODO: scheduler?
-        return Adam(self.parameters(), lr=self.learning_rate)
+    def configure_optimizers(self) -> Tuple[List[Optimizer], List[LRSchedulerType]]:
+        optimizer = Adam(self.parameters(), lr=self.learning_rate)
+
+        scheduler = {
+            'scheduler': ReduceLROnPlateau(optimizer),
+            'monitor': LearningRateMonitor('epoch')
+        }
+
+        return [optimizer], [scheduler]
 
     def step(self, batch: Tensor) -> Tensor:
         # get columns of batch
