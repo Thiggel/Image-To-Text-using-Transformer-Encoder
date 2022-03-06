@@ -122,26 +122,26 @@ class UnifiedTransformer(LightningModule):
 
     def step(self, batch: Tensor) -> Tensor:
         # get columns of batch
-        (images, text), targets = list(zip(*batch))
+        [images, captions], targets = batch
 
         # we use cross entropy as our loss function
-        return cross_entropy(self.forward(images, text), targets)
+        return cross_entropy(self.forward(images, captions), targets)
 
-    def training_step(self, batch: Tensor) -> Tensor:
+    def training_step(self, batch: Tensor, batch_idx: int) -> Tensor:
         loss = self.step(batch)
 
         self.log('train_loss', loss)
 
         return loss
 
-    def validation_step(self, batch: Tensor) -> Tensor:
+    def validation_step(self, batch: Tensor, batch_idx: int) -> Tensor:
         loss = self.step(batch)
 
         self.log('val_loss', loss)
 
         return loss
 
-    def test_step(self, batch: Tensor) -> Tensor:
+    def test_step(self, batch: Tensor, batch_idx: int) -> Tensor:
         loss = self.step(batch)
 
         self.log('test_loss', loss)

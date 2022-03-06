@@ -1,6 +1,6 @@
 from torch.utils.data import Dataset
-from torch import tensor, Tensor, cat, long
-from typing import Optional, Callable, Tuple, Any, List, Dict
+from torch import tensor, Tensor, long
+from typing import Optional, Callable, Tuple, Any, List
 from PIL import Image
 from json import load
 from torchtext.data.utils import get_tokenizer
@@ -33,10 +33,6 @@ class CocoTrueAndFalseCaptions(Dataset):
         vocab = build_vocab_from_iterator(map(self.tokenizer, self.all_captions()), specials=['<PAD>'])
 
         return vocab
-
-    @property
-    def vocab_size(self):
-        return len(self.vocab)
 
     @staticmethod
     def load_annotations(filename: str) -> List[Any]:
@@ -76,6 +72,9 @@ class CocoTrueAndFalseCaptions(Dataset):
         if self.transform:
             image = self.transform(image)
 
+        if isinstance(image, Tensor):
+            image = image.float()
+
         # make sure we don't choose a correct caption as the false one.
         # Therefore, we take a caption which is 100 indexes further down
         # the array
@@ -86,6 +85,15 @@ class CocoTrueAndFalseCaptions(Dataset):
 
         return (image, caption), target
 
+    def all_captions(self) -> List[str]:
+        # get an array of all captions in the dataset
+        # used to build the vocab
+        return list(map(lambda item: item['caption'], self.annotations))
+
+    @property
+    def vocab_size(self):
+        return len(self.vocab)
+
     @property
     def sequence_length(self):
         return self.captions.shape[1]
@@ -94,8 +102,3 @@ class CocoTrueAndFalseCaptions(Dataset):
         # there is one true and one false caption
         # for each item in the annotations file
         return 2 * len(self.annotations)
-
-    def all_captions(self) -> List[str]:
-        # get an array of all captions in the dataset
-        # used to build the vocab
-        return list(map(lambda item: item['caption'], self.annotations))
