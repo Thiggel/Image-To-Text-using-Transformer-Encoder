@@ -13,6 +13,7 @@ from torch.optim import Adam, Optimizer
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from pytorch_lightning.utilities.types import LRSchedulerType
 from pytorch_lightning.callbacks.lr_monitor import LearningRateMonitor
+from torchmetrics import Accuracy
 from typing import Tuple, List
 
 
@@ -69,7 +70,7 @@ class UnifiedTransformer(LightningModule):
         # Therefore, the shape is (1, num_patches + num_tokens + 1, embed_dim) as it is added to
         # one patch embedding (hence the 1 in front), and each token in the embedding
         # has embed_dim dimensions.
-        self.positional_embedding = Parameter(
+        self.positional_encoding = Parameter(
             zeros(
                 1,
                 self.patch_embed.num_patches + sequence_length + 1,
@@ -92,6 +93,8 @@ class UnifiedTransformer(LightningModule):
 
         self.learning_rate = learning_rate
 
+        self.accuracy = Accuracy()
+
     def forward(self, images: Tensor, text: Tensor) -> Tensor:
         # create patch embeddings
         image_patches = self.patch_embed(images)
@@ -109,8 +112,8 @@ class UnifiedTransformer(LightningModule):
         # prepend class tokens to embeddings
         x = cat((n_class_tokens, x), dim=1)
 
-        # add positional embedding
-        x += self.positional_embedding
+        # add positional encoding
+        x += self.positional_encoding
 
         x = self.transformer_encoder(x)
 
@@ -130,33 +133,45 @@ class UnifiedTransformer(LightningModule):
 
         return [optimizer], [scheduler]
 
-    def step(self, batch: Tensor) -> Tensor:
+    def training_step(self, batch: Tensor, batch_idx: int) -> Tensor:
         # get columns of batch
         [images, captions], targets = batch
 
-        # we use cross entropy as our loss function
-        return cross_entropy(self.forward(images, captions), targets)
-
-    def training_step(self, batch: Tensor, batch_idx: int) -> Tensor:
-        loss = self.step(batch)
+        predicted = self.forward(images, captions)
+        loss = cross_entropy(predicted, targets)
 
         self.log('train_loss', loss)
 
         return loss
 
     def validation_step(self, batch: Tensor, batch_idx: int) -> Tensor:
-        loss = self.step(batch)
+        # get columns of batch
+        [images, captions], targets = batch
+
+        predicted = self.forward(images, captions)
+        loss = cross_entropy(predicted, targets)
+        accuracy = self.accuracy(predicted, targets)
 
         self.log('val_loss', loss)
+        self.log('val_acc', accuracy)
 
         return loss
 
     def test_step(self, batch: Tensor, batch_idx: int) -> Tensor:
-        loss = self.step(batch)
+        # get columns of batch
+        [images, captions], targets = batch
+
+        predicted = self.forward(images, captions)
+        loss = cross_entropy(predicted, targets)
+        accuracy = self.accuracy(predicted, targets)
 
         self.log('test_loss', loss)
+        self.log('test_acc', accuracy)
 
         return loss
+
+    def training_epoch_end(self, outs):
+        self.log('train_acc_epoch', self.accuracy)
 
     def save(self) -> None:
         print("Saving model at: " + self.filename)

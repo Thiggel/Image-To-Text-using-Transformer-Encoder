@@ -50,7 +50,7 @@ class VisionTransformer(Module):
         # Therefore, the shape is (1, num_patches + 1, embed_dim) as it is added to
         # one patch embedding (hence the 1 in front), and each token in the embedding
         # has embed_dim dimensions.
-        self.positional_embedding = Parameter(
+        self.positional_encoding = Parameter(
             zeros(
                 1,
                 self.patch_embed.num_patches + 1,
@@ -84,7 +84,7 @@ class VisionTransformer(Module):
         x = cat((n_class_tokens, x), dim=1)
 
         # add positional embedding
-        x += self.positional_embedding
+        x += self.positional_encoding
 
         x = self.transformer_encoder(x)
 
