@@ -1,49 +1,33 @@
 import optuna
-import torchvision.transforms as transforms
-from torch.utils.data import DataLoader
 from pytorch_lightning import Trainer
 from optuna.trial import Trial
 
-from CocoTrueAndFalseCaptions import CocoTrueAndFalseCaptions
+from CocoDataModule import CocoDataModule
+from VisualGenomeDataModule import VisualGenomeDataModule
 from UnifiedTransformer import UnifiedTransformer
 
 def objective(trial: Trial) -> float:
-
-    dataset = CocoTrueAndFalseCaptions(
-        image_dir='val2017',
-        annotations_file='annotations/captions_val2017.json',
-        transform=transforms.Compose([
-            transforms.Resize((128, 128)),
-            transforms.PILToTensor()
-        ])
-    )
-
-    train_dataloader = DataLoader(
-        dataset,
-        batch_size=4,
-        shuffle=True
-    )
-
-    val_dataloader = train_dataloader
-
     num_encoder_layers = trial.suggest_int('num_encoder_layers', 6, 24)
     dropout = trial.suggest_float('dropout', 0.1, 0.5)
 
+    DATASET = 'Coco' # 'Visual Genome'
+    data_module = CocoDataModule() if DATASET == 'Coco' else VisualGenomeDataModule()
+
     model = UnifiedTransformer(
-        image_size=128,
-        num_tokens=dataset.vocab_size,
-        sequence_length=dataset.sequence_length,
+        image_size=data_module.image_size,
+        num_tokens=data_module.vocab_size,
+        sequence_length=data_module.sequence_length,
         num_encoder_layers=num_encoder_layers,
         dropout=dropout,
-        num_classes=2
+        num_classes=data_module.num_classes
     )
 
     trainer = Trainer()
 
     hyper_parameters = dict(num_encoder_layers=num_encoder_layers, dropout=dropout)
-    trainer.logger.log_hyperparams(hyper_parameters)
+    print("Hyper Parameters: ", hyper_parameters)
 
-    trainer.fit(model, train_dataloader, val_dataloader)
+    trainer.fit(model, data_module)
 
     return trainer.callback_metrics["val_acc"].item()
 

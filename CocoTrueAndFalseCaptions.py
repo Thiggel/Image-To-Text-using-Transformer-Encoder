@@ -1,15 +1,13 @@
-from torch.utils.data import Dataset
-from torch import tensor, Tensor, long
+from torch import Tensor
 from typing import Optional, Callable, Tuple, Any, List
 from PIL import Image
 from json import load
-from torchtext.data.utils import get_tokenizer
-from torchtext.vocab import build_vocab_from_iterator, Vocab
 from os.path import join
-from torch.nn.utils.rnn import pad_sequence
+
+from ImageTextDataset import ImageTextDataset
 
 
-class CocoTrueAndFalseCaptions(Dataset):
+class CocoTrueAndFalseCaptions(ImageTextDataset):
 
     def __init__(
             self,
@@ -17,39 +15,22 @@ class CocoTrueAndFalseCaptions(Dataset):
             annotations_file: str,
             transform: Optional[Callable] = None
     ) -> None:
-        self.image_dir = image_dir
-        self.transform = transform
-
         self.annotations = self.load_annotations(annotations_file)
         self.annotations_size = len(self.annotations)
 
-        self.tokenizer = get_tokenizer('basic_english')
-        self.vocab = self.build_vocab()
+        super().__init__(sentence_list=self.all_captions())
 
-        self.captions = self.preprocess_captions()
+        self.image_dir = image_dir
+        self.transform = transform
 
-    def build_vocab(self) -> Vocab:
-        # use <PAD> token to later pad sequences to same length
-        vocab = build_vocab_from_iterator(map(self.tokenizer, self.all_captions()), specials=['<PAD>'])
+        self.captions = self.preprocess_text(self.annotations, 'caption')
 
-        return vocab
+        self.num_classes = 2
 
     @staticmethod
     def load_annotations(filename: str) -> List[Any]:
         with open(filename, 'r') as file:
             return load(file)['annotations']
-
-    def preprocess_captions(self):
-        # pad each token list so that it has the same length
-        return pad_sequence([
-            # create numeric token lists out of raw text
-            self.create_vocab_indices(item['caption'])
-            for item in self.annotations
-        ], padding_value=self.vocab['<PAD>']).transpose(0, 1)
-
-    def create_vocab_indices(self, caption: str) -> Tensor:
-        # convert a string to a list of token indices in the vocab
-        return tensor(self.vocab(self.tokenizer(caption)), dtype=long)
 
     def load_image(self, index: int) -> Image.Image:
         filename = f"{self.annotations[index]['image_id']:012d}.jpg"
@@ -89,10 +70,6 @@ class CocoTrueAndFalseCaptions(Dataset):
         # get an array of all captions in the dataset
         # used to build the vocab
         return list(map(lambda item: item['caption'], self.annotations))
-
-    @property
-    def vocab_size(self):
-        return len(self.vocab)
 
     @property
     def sequence_length(self):
