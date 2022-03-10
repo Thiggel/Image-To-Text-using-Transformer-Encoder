@@ -1,4 +1,3 @@
-from PatchEmbedding import PatchEmbedding
 from torch import zeros, cat, Tensor, save, load
 from pytorch_lightning import LightningModule
 from os.path import isfile
@@ -15,6 +14,8 @@ from pytorch_lightning.utilities.types import LRSchedulerType
 from pytorch_lightning.callbacks.lr_monitor import LearningRateMonitor
 from torchmetrics import Accuracy
 from typing import Tuple, List
+
+from model.PatchEmbedding import PatchEmbedding
 
 
 class UnifiedTransformer(LightningModule):

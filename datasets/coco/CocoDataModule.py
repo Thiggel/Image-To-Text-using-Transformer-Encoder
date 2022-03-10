@@ -1,8 +1,8 @@
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 
-from CocoTrueAndFalseCaptions import CocoTrueAndFalseCaptions
-from ImageTextDataModule import ImageTextDataModule
+from datasets.coco.CocoTrueAndFalseCaptions import CocoTrueAndFalseCaptions
+from datasets.ImageTextDataModule import ImageTextDataModule
 
 
 class CocoDataModule(ImageTextDataModule):
@@ -14,9 +14,9 @@ class CocoDataModule(ImageTextDataModule):
 
         self.full_dir = 'train2017'
         self.full_url = 'http://images.cocodataset.org/zips/train2017.zip'
-        self.full_annotations_file = 'annotations/captions_train2017.json'
+        self.full_annotations_file = '../../annotations/captions_train2017.json'
 
-        self.annotations_dir = 'annotations'
+        self.annotations_dir = '../../annotations'
         self.annotations_url = 'http://images.cocodataset.org/annotations/annotations_trainval2017.zip'
 
         # download datasets if not yet downloaded

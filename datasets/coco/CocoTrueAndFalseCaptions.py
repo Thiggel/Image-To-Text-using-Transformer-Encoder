@@ -4,7 +4,7 @@ from PIL import Image
 from json import load
 from os.path import join
 
-from ImageTextDataset import ImageTextDataset
+from datasets.ImageTextDataset import ImageTextDataset
 
 
 class CocoTrueAndFalseCaptions(ImageTextDataset):
@@ -25,7 +25,10 @@ class CocoTrueAndFalseCaptions(ImageTextDataset):
 
         self.captions = self.preprocess_text(self.annotations, 'caption')
 
-        self.num_classes = 2
+        # the output should just be a number between 0 and 1,
+        # denoting the truth value of the the caption
+        # in regards to the image
+        self.num_classes = 1
 
     @staticmethod
     def load_annotations(filename: str) -> List[Any]:

@@ -6,7 +6,7 @@ from zipfile import ZipFile
 from typing import List, Sequence
 from torch.utils.data import random_split, Subset
 
-from CocoTrueAndFalseCaptions import CocoTrueAndFalseCaptions
+from datasets.coco.CocoTrueAndFalseCaptions import CocoTrueAndFalseCaptions
 
 
 class ImageTextDataModule(LightningDataModule):

@@ -6,7 +6,7 @@ from PIL import Image
 from os.path import join, exists
 from torch import tensor, Tensor
 
-from ImageTextDataset import ImageTextDataset
+from datasets.ImageTextDataset import ImageTextDataset
 
 
 class VisualGenomeQuestionsAnswers(ImageTextDataset):

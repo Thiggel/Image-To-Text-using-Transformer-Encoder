@@ -1,8 +1,8 @@
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 
-from VisualGenomeQuestionsAnswers import VisualGenomeQuestionsAnswers
-from ImageTextDataModule import ImageTextDataModule
+from datasets.visualgenome.VisualGenomeQuestionsAnswers import VisualGenomeQuestionsAnswers
+from datasets.ImageTextDataModule import ImageTextDataModule
 
 
 class VisualGenomeDataModule(ImageTextDataModule):
@@ -12,10 +12,10 @@ class VisualGenomeDataModule(ImageTextDataModule):
 
         self.batch_size = batch_size
 
-        self.images_part1_dir = 'images'
+        self.images_part1_dir = '../../images'
         self.images_part1_url = 'https://cs.stanford.edu/people/rak248/VG_100K_2/images.zip'
 
-        self.images_part2_dir = 'images'
+        self.images_part2_dir = '../../images'
         self.images_part2_url = 'https://cs.stanford.edu/people/rak248/VG_100K_2/images2.zip'
 
         self.questions_answers_file = 'question_answers.json'

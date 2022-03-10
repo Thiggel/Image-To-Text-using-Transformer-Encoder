@@ -2,9 +2,9 @@ import optuna
 from pytorch_lightning import Trainer
 from optuna.trial import Trial
 
-from CocoDataModule import CocoDataModule
-from VisualGenomeDataModule import VisualGenomeDataModule
-from UnifiedTransformer import UnifiedTransformer
+from datasets.coco.CocoDataModule import CocoDataModule
+from datasets.visualgenome.VisualGenomeDataModule import VisualGenomeDataModule
+from model.UnifiedTransformer import UnifiedTransformer
 
 def objective(trial: Trial) -> float:
     num_encoder_layers = trial.suggest_int('num_encoder_layers', 6, 24)

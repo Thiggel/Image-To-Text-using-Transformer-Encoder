@@ -2,3 +2,5 @@ annotations
 val2017
 question_answers.json
 *.zip
+annotations
+lightning_logs
