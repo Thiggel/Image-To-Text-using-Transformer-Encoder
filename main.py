@@ -2,6 +2,8 @@ import optuna
 from pytorch_lightning import Trainer
 from optuna.trial import Trial
 from json import dumps
+from os.path import exists
+from os import mkdir
 
 from datasets.coco.CocoDataModule import CocoDataModule
 from datasets.visualgenome.VisualGenomeDataModule import VisualGenomeDataModule
@@ -24,6 +26,12 @@ def objective(trial: Trial) -> float:
 
     data_module = CocoDataModule() if dataset == 'Coco' else VisualGenomeDataModule()
 
+    # create directory for saved models if not exists
+    saved_dir = 'saved'
+    if not exists(saved_dir):
+        mkdir(saved_dir)
+    
+    # log hyper parameters
     hyper_parameters = dict(
         num_encoder_layers=num_encoder_layers,
         dropout=dropout,
@@ -40,7 +48,7 @@ def objective(trial: Trial) -> float:
         num_encoder_layers=num_encoder_layers,
         dropout=dropout,
         num_classes=data_module.num_classes,
-        filename=f'saved/{dumps(hyper_parameters)}.pt',
+        filename=f'{saved_dir}/{dumps(hyper_parameters)}.pt',
 
         # In the experiment, a patch embedding
         # will be contrasted to a convolutional

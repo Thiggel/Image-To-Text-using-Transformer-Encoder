@@ -12,9 +12,9 @@ class CocoDataModule(ImageTextDataModule):
 
         self.batch_size = batch_size
 
-        self.full_dir = 'val2017'
+        self.full_dir = 'train2017'
         self.full_url = 'http://images.cocodataset.org/zips/train2017.zip'
-        self.full_annotations_file = 'annotations/captions_val2017.json'
+        self.full_annotations_file = 'annotations/captions_train2017.json'
 
         self.annotations_dir = 'annotations'
         self.annotations_url = 'http://images.cocodataset.org/annotations/annotations_trainval2017.zip'

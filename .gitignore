@@ -5,3 +5,5 @@ question_answers.json
 *.zip
 lightning_logs
 .idea
+images
+images2

@@ -6,7 +6,7 @@ from zipfile import ZipFile
 from typing import List, Sequence
 from torch.utils.data import random_split, Subset
 
-from ImageTextDataset import ImageTextDataset
+from datasets.ImageTextDataset import ImageTextDataset
 
 
 class ImageTextDataModule(LightningDataModule):
