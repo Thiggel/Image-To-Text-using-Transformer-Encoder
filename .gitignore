@@ -1,9 +1,9 @@
-annotations
-val2017
-train2017
+annotations/
+val2017/
+train2017/
 question_answers.json
 *.zip
-lightning_logs
+lightning_logs/
 .idea
-images
-images2
+images/
+images2/
