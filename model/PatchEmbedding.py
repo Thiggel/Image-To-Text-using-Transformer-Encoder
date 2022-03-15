@@ -4,7 +4,13 @@ from torch.nn import Module, Conv2d
 
 class PatchEmbedding(Module):
 
-    def __init__(self, image_size: int, channels: int = 3, patch_size: int = 16, embed_dim: int = 768) -> None:
+    def __init__(
+            self,
+            image_size: int,
+            channels: int = 3,
+            patch_size: int = 16,
+            embed_dim: int = 768
+    ) -> None:
         """
         Split a tensor of at least two dimensions
         into patches of a specified size
@@ -24,7 +30,7 @@ class PatchEmbedding(Module):
         self.linear_projection = Conv2d(channels, embed_dim, (patch_size, patch_size), (patch_size, patch_size))
 
     @property
-    def num_patches(self) -> int:
+    def sequence_length(self) -> int:
         return (self.image_size // self.patch_size) ** 2
 
     def forward(self, x: Tensor) -> Tensor:

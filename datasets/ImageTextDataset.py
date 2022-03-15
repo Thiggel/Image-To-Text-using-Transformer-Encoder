@@ -1,6 +1,6 @@
 from torch.utils.data import Dataset
 from torchtext.vocab import build_vocab_from_iterator, Vocab
-from typing import List
+from typing import List, Dict
 from torch.nn.utils.rnn import pad_sequence
 from torchtext.data.utils import get_tokenizer
 from torch import tensor, Tensor, long
@@ -11,16 +11,14 @@ class ImageTextDataset(Dataset):
     def __init__(self, sentence_list: List[str]):
         super().__init__()
 
-        if not self.tokenizer:
-            self.tokenizer = get_tokenizer('basic_english')
-
+        self.tokenizer = get_tokenizer('basic_english')
         self.vocab = self.build_vocab(sentence_list)
 
     def build_vocab(self, sentence_list: List[str]) -> Vocab:
         # use <PAD> token to later pad sequences to same length
         return build_vocab_from_iterator(map(self.tokenizer, sentence_list), specials=['<PAD>'])
 
-    def preprocess_text(self, data, text_key):
+    def preprocess_text(self, data: Dict, text_key: str) -> Tensor:
         # pad each token list so that it has the same length
         return pad_sequence([
             # create numeric token lists out of raw text
@@ -33,5 +31,8 @@ class ImageTextDataset(Dataset):
         return tensor(self.vocab(self.tokenizer(caption)), dtype=long)
 
     @property
-    def vocab_size(self):
+    def vocab_size(self) -> int:
         return len(self.vocab)
+
+    def __len__(self) -> int:
+        pass

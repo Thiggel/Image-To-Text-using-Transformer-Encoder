@@ -6,7 +6,9 @@ from torch.nn import \
     TransformerEncoder, \
     TransformerEncoderLayer, \
     Linear, \
-    Embedding
+    Embedding, \
+    Dropout, \
+    Softmax
 from torch.nn.functional import cross_entropy
 from torch.optim import Adam, Optimizer
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -16,6 +18,7 @@ from torchmetrics import Accuracy
 from typing import Tuple, List
 
 from model.PatchEmbedding import PatchEmbedding
+from model.ConvolutionalEmbedding import ConvolutionalEmbedding
 
 
 class UnifiedTransformer(LightningModule):
@@ -26,11 +29,12 @@ class UnifiedTransformer(LightningModule):
             sequence_length: int,
             num_encoder_layers: int,
             num_classes: int,
+            convolutional_embedding: bool = False,
             patch_size: int = 16,
             num_heads: int = 12,
             embed_dim: int = 768,
             dropout: float = 0.1,
-            learning_rate: float = 0.1,
+            learning_rate: float = 0.05,
             filename: str = 'model.pt'
     ) -> None:
 
@@ -47,7 +51,9 @@ class UnifiedTransformer(LightningModule):
         # it splits it into 16x16 patches, flattens them and projects them to
         # the embedding dimension `embed_dim`
         # hence, the resulting vector will have the shape (num_images, num_patches, embed_dim)
-        self.patch_embed = PatchEmbedding(image_size, patch_size=patch_size, embed_dim=embed_dim)
+        self.patch_embed = PatchEmbedding(image_size, patch_size=patch_size, embed_dim=embed_dim) \
+            if not convolutional_embedding \
+            else ConvolutionalEmbedding(embed_dim)
 
         # The tokens in the text sequences are embedded using a word embedding.
         # This refers to a hyperspace that maps words to positions
@@ -74,7 +80,7 @@ class UnifiedTransformer(LightningModule):
         self.positional_encoding = Parameter(
             zeros(
                 1,
-                self.patch_embed.num_patches + sequence_length + 1,
+                self.patch_embed.sequence_length + sequence_length + 1,
                 embed_dim
             )
         )
@@ -91,6 +97,10 @@ class UnifiedTransformer(LightningModule):
         )
 
         self.MLP_head = Linear(embed_dim, num_classes)
+
+        self.dropout = Dropout(dropout)
+
+        self.softmax = Softmax()
 
         self.learning_rate = learning_rate
 
@@ -122,13 +132,20 @@ class UnifiedTransformer(LightningModule):
         final_class_token = x[:, 0]
 
         # lastly, feed it into the MLP
-        return self.MLP_head(final_class_token)
+        x = self.MLP_head(final_class_token)
+
+        # add dropout to prevent overfitting
+        x = self.dropout(x)
+
+        # compute probabilities between 0 and 1
+        # using the softmax function
+        return self.softmax(x)
 
     def configure_optimizers(self) -> Tuple[List[Optimizer], List[LRSchedulerType]]:
         optimizer = Adam(self.parameters(), lr=self.learning_rate)
 
         scheduler = {
-            'scheduler': ReduceLROnPlateau(optimizer),
+            'scheduler': ReduceLROnPlateau(optimizer, patience=3),
             'monitor': LearningRateMonitor('epoch')
         }
 
@@ -173,6 +190,9 @@ class UnifiedTransformer(LightningModule):
 
     def training_epoch_end(self, outs):
         self.log('train_acc_epoch', self.accuracy)
+
+        # save the model after every epoch
+        self.save()
 
     def save(self) -> None:
         print("Saving model at: " + self.filename)

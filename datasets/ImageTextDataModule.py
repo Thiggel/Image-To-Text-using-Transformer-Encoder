@@ -6,7 +6,7 @@ from zipfile import ZipFile
 from typing import List, Sequence
 from torch.utils.data import random_split, Subset
 
-from datasets.coco.CocoTrueAndFalseCaptions import CocoTrueAndFalseCaptions
+from ImageTextDataset import ImageTextDataset
 
 
 class ImageTextDataModule(LightningDataModule):
@@ -17,7 +17,7 @@ class ImageTextDataModule(LightningDataModule):
         self.image_size = 128
 
     @staticmethod
-    def split_dataset(dataset: CocoTrueAndFalseCaptions) -> List[Subset[CocoTrueAndFalseCaptions]]:
+    def split_dataset(dataset: ImageTextDataset) -> List[Subset[ImageTextDataset]]:
         size = len(dataset)
 
         # get 70% for the train set
