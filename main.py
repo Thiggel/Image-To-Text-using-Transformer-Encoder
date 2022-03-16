@@ -58,7 +58,7 @@ def objective(trial: Trial) -> float:
 
     model.save()
 
-    trainer = Trainer(max_epochs=15)
+    trainer = Trainer(max_epochs=15, gpus=-1)
 
     trainer.fit(model, data_module)
 

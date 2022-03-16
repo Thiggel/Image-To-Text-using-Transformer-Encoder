@@ -1,0 +1,7 @@
+torch
+torchmetrics
+torchtext
+torchvision
+pytorch_lightning
+optuna
+progressbar
