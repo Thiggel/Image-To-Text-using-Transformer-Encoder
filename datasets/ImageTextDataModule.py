@@ -5,8 +5,26 @@ from urllib.request import urlretrieve
 from zipfile import ZipFile
 from typing import List, Sequence
 from torch.utils.data import random_split, Subset
+from progressbar import ProgressBar
 
 from datasets.ImageTextDataset import ImageTextDataset
+
+
+class DownloadProgressBar():
+    def __init__(self):
+        self.progress_bar = None
+
+    def __call__(self, block_num, block_size, total_size):
+        if not self.progress_bar:
+            self.progress_bar = ProgressBar(maxval=total_size)
+            self.progress_bar.start()
+
+        downloaded = block_num * block_size
+
+        if downloaded < total_size:
+            self.progress_bar.update(downloaded)
+        else:
+            self.progress_bar.finish()
 
 
 class ImageTextDataModule(LightningDataModule):
@@ -41,7 +59,7 @@ class ImageTextDataModule(LightningDataModule):
             # 2. Make sure zip file is downloaded
             if not exists(zipFile):
                 print(f"Downloading {zipFile} from {url}...")
-                urlretrieve(url, zipFile)
+                urlretrieve(url, zipFile, DownloadProgressBar())
                 print("Done!\n")
 
             print(f"Unzipping {zipFile}...")
