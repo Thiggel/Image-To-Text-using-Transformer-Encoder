@@ -146,7 +146,7 @@ class UnifiedTransformer(LightningModule):
 
         scheduler = {
             'scheduler': ReduceLROnPlateau(optimizer, patience=3),
-            'monitor': LearningRateMonitor('epoch')
+            'monitor': 'train_loss'
         }
 
         return [optimizer], [scheduler]
