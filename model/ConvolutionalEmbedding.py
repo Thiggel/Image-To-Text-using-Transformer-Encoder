@@ -37,22 +37,24 @@ class ConvolutionalEmbedding(Module):
     def __init__(
             self,
             embed_dim: int,
-            image_size: int = 128
+            image_size: int = 256
     ) -> None:
         super().__init__()
 
         self.image_size = image_size
 
         self.model = Sequential(
-            # suppose image size is 128x128
-            # size: (128 - 6 + 1) // 2 = 61
+            # suppose image size is 256x256
+            # size: (256 - 6 + 1) // 2 = 125
             ConvNetLayer(input_channels=3, output_channels=32, kernel_size=6),
-            # size: (61 - 5 + 1) // 2 = 28
+            # size: (125 - 5 + 1) // 2 = 60
             ConvNetLayer(input_channels=32, output_channels=64, kernel_size=5),
-            # size: (28 - 4 + 1) // 2 = 12
+            # size: (60 - 4 + 1) // 2 = 28
             ConvNetLayer(input_channels=64, output_channels=128, kernel_size=4),
-            # size: (12 - 3 + 1) // 2 = 5
-            ConvNetLayer(input_channels=128, output_channels=embed_dim, kernel_size=3)
+            # size: (28 - 3 + 1) // 2 = 13
+            ConvNetLayer(input_channels=128, output_channels=256, kernel_size=3),
+            # size: (13 - 2 + 1) // 2 = 6
+            ConvNetLayer(input_channels=256, output_channels=embed_dim, kernel_size=2)
         )
 
     @staticmethod

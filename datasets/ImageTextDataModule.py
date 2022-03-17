@@ -32,7 +32,7 @@ class ImageTextDataModule(LightningDataModule):
     def __init__(self) -> None:
         super().__init__()
 
-        self.image_size = 128
+        self.image_size = 256
 
     @staticmethod
     def split_dataset(dataset: ImageTextDataset) -> List[Subset[ImageTextDataset]]:

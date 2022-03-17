@@ -5,9 +5,18 @@ from torchtext.data.utils import get_tokenizer
 from PIL import Image
 from os.path import join, exists
 from torch import tensor, Tensor
-from torchvision.transforms import RandomHorizontalFlip, RandomVerticalFlip, ColorJitter, RandomAffine, ToPILImage
+from torchvision.transforms import RandomHorizontalFlip, RandomVerticalFlip, ColorJitter, ToPILImage
+from torchvision.transforms.functional import affine
 
 from datasets.ImageTextDataset import ImageTextDataset
+
+
+class Translate:
+    def __init__(self, x: int, y: int):
+        self.translate = [x, y]
+
+    def __call__(self, img: Tensor) -> Tensor:
+        return affine(img, angle=0, translate=self.translate, scale=1, shear=[0, 0])
 
 
 class VisualGenomeQuestionsAnswers(ImageTextDataset):
@@ -18,7 +27,7 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
             images_part2_dir: str,
             questions_answers_file: str,
             patch_size: int = 16,
-            image_size: int = 128,
+            image_size: int = 256,
             transform: Optional[Callable] = None
     ) -> None:
         self.image_size = image_size
@@ -94,12 +103,10 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
             ]))
 
     def get_shifting_augmentations(self) -> List[Callable]:
-        onePixelAsPercent = 1 / self.image_size
-
         return [
-            RandomAffine(degrees=(0, 0), translate=(x * onePixelAsPercent, y * onePixelAsPercent))
-            for y in range(self.patch_size)
-            for x in range(self.patch_size)
+            Translate(x, y)
+            for y in range(-self.patch_size + 1, self.patch_size)
+            for x in range(-self.patch_size + 1, self.patch_size)
         ]
 
     def init_augmentations(self) -> List[Callable]:
@@ -107,16 +114,17 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
             *self.get_shifting_augmentations(),
             RandomHorizontalFlip(p=1),
             RandomVerticalFlip(p=1),
-            ColorJitter(brightness=(.2, .2)),
-            ColorJitter(brightness=(.3, .3)),
-            ColorJitter(brightness=(.4, .4)),
-            ColorJitter(brightness=(.5, .5)),
             ColorJitter(brightness=(.6, .6)),
+            ColorJitter(brightness=(.8, .8)),
+            ColorJitter(brightness=(1, 1)),
+            ColorJitter(brightness=(1.2, 1.2)),
+            ColorJitter(brightness=(1.4, 1.4)),
             ColorJitter(contrast=(.2, .2)),
-            ColorJitter(contrast=(.3, .3)),
             ColorJitter(contrast=(.4, .4)),
-            ColorJitter(contrast=(.5, .5)),
             ColorJitter(contrast=(.6, .6)),
+            ColorJitter(contrast=(.8, .8)),
+            ColorJitter(contrast=(1.2, 1.2)),
+            ColorJitter(contrast=(1.4, 1.4)),
         ]
 
     def load_image(self, index: int) -> Image.Image:
