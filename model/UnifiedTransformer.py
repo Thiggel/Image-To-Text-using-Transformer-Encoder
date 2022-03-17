@@ -139,7 +139,7 @@ class UnifiedTransformer(LightningModule):
 
         # compute probabilities between 0 and 1
         # using the softmax function
-        return self.softmax(x)
+        return self.softmax(x, dim=0)
 
     def configure_optimizers(self) -> Tuple[List[Optimizer], List[LRSchedulerType]]:
         optimizer = Adam(self.parameters(), lr=self.learning_rate)

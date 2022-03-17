@@ -39,13 +39,13 @@ class CocoDataModule(ImageTextDataModule):
         self.coco_train, self.coco_test, self.coco_val = self.split_dataset(coco_full)
 
     def train_dataloader(self) -> DataLoader:
-        return DataLoader(self.coco_train, batch_size=self.batch_size, shuffle=True)
+        return DataLoader(self.coco_train, batch_size=self.batch_size, shuffle=True, num_workers=12)
 
     def val_dataloader(self) -> DataLoader:
-        return DataLoader(self.coco_val, batch_size=self.batch_size)
+        return DataLoader(self.coco_val, batch_size=self.batch_size, num_workers=12)
 
     def test_dataloader(self) -> DataLoader:
-        return DataLoader(self.coco_test, batch_size=self.batch_size)
+        return DataLoader(self.coco_test, batch_size=self.batch_size, num_workers=12)
 
     def load_dataset(self) -> None:
         self.download_if_not_exists(self.full_dir, self.full_url)
