@@ -44,13 +44,13 @@ class VisualGenomeDataModule(ImageTextDataModule):
         self.visual_genome_val = self.split_dataset(visual_genome_full)
 
     def train_dataloader(self) -> DataLoader:
-        return DataLoader(self.visual_genome_train, batch_size=self.batch_size, shuffle=True)
+        return DataLoader(self.visual_genome_train, batch_size=self.batch_size, shuffle=True, num_workers=12)
 
     def val_dataloader(self) -> DataLoader:
-        return DataLoader(self.visual_genome_val, batch_size=self.batch_size)
+        return DataLoader(self.visual_genome_val, batch_size=self.batch_size, num_workers=12)
 
     def test_dataloader(self) -> DataLoader:
-        return DataLoader(self.visual_genome_test, batch_size=self.batch_size)
+        return DataLoader(self.visual_genome_test, batch_size=self.batch_size, num_workers=12)
 
     def load_dataset(self) -> None:
         self.download_if_not_exists(self.images_part1_dir, self.images_part1_url)

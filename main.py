@@ -1,5 +1,6 @@
 import optuna
 from pytorch_lightning import Trainer
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from optuna.trial import Trial
 from json import dumps
 from os.path import exists
@@ -58,7 +59,7 @@ def objective(trial: Trial) -> float:
 
     model.save()
 
-    trainer = Trainer(max_epochs=15, gpus=-1)
+    trainer = Trainer(max_epochs=15, gpus=-1, callbacks=[EarlyStopping(monitor="val_loss")])
 
     trainer.fit(model, data_module)
 
