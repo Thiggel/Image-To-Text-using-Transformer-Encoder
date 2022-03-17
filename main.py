@@ -63,7 +63,6 @@ def objective(trial: Trial) -> float:
     #
     # return trainer.callback_metrics["val_acc"].item()
 
-
 if __name__ == '__main__':
    data_module = VisualGenomeDataModule()   
 

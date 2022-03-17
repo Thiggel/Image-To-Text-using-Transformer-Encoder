@@ -64,6 +64,12 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
             ToPILImage()(self.__getitem__(index + 1)[0][0]).show('testimgs/' + str(index + 1) + '.jpg')
             ToPILImage()(self.__getitem__(index + 2)[0][0]).show('testimgs/' + str(index + 2) + '.jpg')
 
+        for i in range(len(self.augmentations)):
+            index = i * len(self.data)
+            ToPILImage()(self.__getitem__(index)[0][0]).save('testimgs/' + str(index) + '.jpg')
+            ToPILImage()(self.__getitem__(index + 1)[0][0]).show('testimgs/' + str(index + 1) + '.jpg')
+            ToPILImage()(self.__getitem__(index + 2)[0][0]).show('testimgs/' + str(index + 2) + '.jpg')
+
     def preprocess_answer(self, answer: str) -> List:
         return self.tokenizer(answer.replace('.', ''))
 
@@ -164,4 +170,3 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
 
     def __len__(self) -> int:
         return self.num_images * len(self.augmentations)
-
