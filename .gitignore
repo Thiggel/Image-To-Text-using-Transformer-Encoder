@@ -7,3 +7,7 @@ lightning_logs/
 .idea
 images/
 images2/
+VG_100K/
+VG_100K_2/
+saved/
+**/__pycache__/

@@ -12,10 +12,10 @@ class VisualGenomeDataModule(ImageTextDataModule):
 
         self.batch_size = batch_size
 
-        self.images_part1_dir = 'images'
+        self.images_part1_dir = 'VG_100K'
         self.images_part1_url = 'https://cs.stanford.edu/people/rak248/VG_100K_2/images.zip'
 
-        self.images_part2_dir = 'images2'
+        self.images_part2_dir = 'VG_100K_2'
         self.images_part2_url = 'https://cs.stanford.edu/people/rak248/VG_100K_2/images2.zip'
 
         self.questions_answers_file = 'question_answers.json'
