@@ -66,5 +66,10 @@ def objective(trial: Trial) -> float:
 
 
 if __name__ == '__main__':
-    study = optuna.create_study()
+    study = optuna.create_study(
+        study_name='multimodal_transformer_study',
+        storage='sqlite:///study.db',
+        load_if_exists=True
+    )
+
     study.optimize(objective, n_trials=30)
