@@ -15,10 +15,10 @@ class CocoTrueAndFalseCaptions(ImageTextDataset):
             annotations_file: str,
             transform: Optional[Callable] = None
     ) -> None:
+        super().__init__()
+
         self.annotations = self.load_annotations(annotations_file)
         self.annotations_size = len(self.annotations)
-
-        super().__init__(sentence_list=self.all_captions())
 
         self.image_dir = image_dir
         self.transform = transform
@@ -68,11 +68,6 @@ class CocoTrueAndFalseCaptions(ImageTextDataset):
         ]
 
         return (image, caption), target
-
-    def all_captions(self) -> List[str]:
-        # get an array of all captions in the dataset
-        # used to build the vocab
-        return list(map(lambda item: item['caption'], self.annotations))
 
     @property
     def sequence_length(self) -> int:

@@ -13,7 +13,6 @@ from torch.nn.functional import cross_entropy
 from torch.optim import Adam, Optimizer
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from pytorch_lightning.utilities.types import LRSchedulerType
-from pytorch_lightning.callbacks.lr_monitor import LearningRateMonitor
 from torchmetrics import Accuracy
 from typing import Tuple, List
 
