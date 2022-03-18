@@ -5,3 +5,4 @@ torchvision
 pytorch_lightning
 optuna
 progressbar
+transformers

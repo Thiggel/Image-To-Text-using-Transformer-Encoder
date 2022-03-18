@@ -30,8 +30,6 @@ class CocoDataModule(ImageTextDataModule):
                 transforms.PILToTensor()
             ])
         )
-
-        self.vocab_size = coco_full.vocab_size
         self.sequence_length = coco_full.sequence_length
         self.num_classes = coco_full.num_classes
 
