@@ -42,7 +42,7 @@ class CocoTrueAndFalseCaptions(ImageTextDataset):
 
         return image
 
-    def __getitem__(self, index: int) -> Tuple[Tuple[Any, str], int]:
+    def __getitem__(self, index: int) -> Tuple[Tuple[Any, Tensor], int]:
         # target is 1 if index is within size of annotations
         # otherwise it is 0, since a wrong caption is chosen
         target = int(index < self.annotations_size)

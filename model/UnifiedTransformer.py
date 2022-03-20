@@ -1,129 +1,93 @@
-from torch import zeros, cat, Tensor, save, load
-from pytorch_lightning import LightningModule
-from os.path import isfile
-from torch.nn import \
-    Parameter, \
-    TransformerEncoder, \
-    TransformerEncoderLayer, \
-    Linear, \
-    Embedding, \
-    Dropout, \
-    Softmax
-from torch.nn.functional import cross_entropy
+from torch import Tensor, cat, zeros, save, load
+from torch.nn import Parameter, TransformerEncoder, TransformerEncoderLayer, Linear, Dropout, Softmax
 from torch.optim import Adam, Optimizer
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from pytorch_lightning.utilities.types import LRSchedulerType
+from typing import List, Tuple
+from pytorch_lightning import LightningModule
 from torchmetrics import Accuracy
-from typing import Tuple, List
+from torch.nn.functional import cross_entropy
+from os.path import isfile
 
-from model.PatchEmbedding import PatchEmbedding
-from model.ConvolutionalEmbedding import ConvolutionalEmbedding
+from model.VisionEncoder import VisionEncoder
+from model.TextEncoder import TextEncoder
 
 
 class UnifiedTransformer(LightningModule):
     def __init__(
             self,
-            image_size: int,
-            num_tokens: int,
-            sequence_length: int,
-            num_encoder_layers: int,
             num_classes: int,
-            convolutional_embedding: bool = False,
-            patch_size: int = 16,
-            num_heads: int = 12,
-            embed_dim: int = 768,
+            num_encoder_layers: int = 6,
+            nhead: int = 12,
             dropout: float = 0.1,
             learning_rate: float = 0.05,
             filename: str = 'model.pt'
     ) -> None:
-
         super().__init__()
 
         self.filename = filename
 
-        # the embedding dimension is used throughout the entire model
-        # it is a hyperparameter of the transformer encoder layer
-        # and hence the image patches have to be projected to this dimension.
-        self.embed_dim = embed_dim
+        # to embed the image, we use a vision transformer, pretrained on
+        # object detection. The forward function of this transformer
+        # has been altered so that the processing is concluded before the
+        # class token is fed into the MLP head. Henceforth, we obtain
+        # a processed sequence of embedded patches that we treat as
+        # our 'image embedding'
+        self.image_embedding = VisionEncoder()
 
-        # The patch embedding module takes a sequence of images and for each image,
-        # it splits it into 16x16 patches, flattens them and projects them to
-        # the embedding dimension `embed_dim`
-        # hence, the resulting vector will have the shape (num_images, num_patches, embed_dim)
-        self.patch_embed = PatchEmbedding(image_size, patch_size=patch_size, embed_dim=embed_dim) \
-            if not convolutional_embedding \
-            else ConvolutionalEmbedding(embed_dim)
+        # In the same way, we use a modified pretrained BERT model,
+        # pretrained on various tasks including question answering
+        # and natural language inference
+        self.text_embedding = TextEncoder()
 
-        # The tokens in the text sequences are embedded using a word embedding.
-        # This refers to a hyperspace that maps words to positions
-        # where words more similar in meaning are closer together.
-        # Thus, a lot more information is encoded than with one-hot-encodings.
-        self.word_embed = Embedding(num_tokens, embed_dim)
+        # assert that the output sizes of the two embeddings are the same
+        # so that they can be concatenated
+        assert  \
+            self.image_embedding.model.config.hidden_size == self.text_embedding.model.config.hidden_size, \
+            "The embedding dimensions for the pretrained image and text encoder must be the same"
 
-        # We prepend a class token `[class]` to the image and text sequence
-        # this class token is a learnable parameter and is at the end fit into
-        # the MLP head for the eventual classification.
-        # It thus has the same dimensions as a single image patch (embed_dim)
-        self.class_token = Parameter(zeros(1, 1, embed_dim))
+        # save our embedding dimension (taken from the embedding layers)
+        self.d_model = self.image_embedding.model.config.hidden_size
 
-        # We concatenate each image patch and text token with its positional embedding
-        # so that this information is not lost in the transformer
-        # (as the order of tokens fed into a transformer normally does
-        # not make a difference) it also is a parameter the model learns
-        # Its second dimension is larger than the number of patches and tokens by exactly 1,
-        # because we prepend the class token to the patch embedding before
-        # adding the positional embedding.
-        # Therefore, the shape is (1, num_patches + num_tokens + 1, embed_dim) as it is added to
-        # one patch embedding (hence the 1 in front), and each token in the embedding
-        # has embed_dim dimensions.
-        self.positional_encoding = Parameter(
-            zeros(
-                1,
-                self.patch_embed.sequence_length + sequence_length + 1,
-                embed_dim
-            )
-        )
+        # we append a class token when processing input, which is later used
+        # to classify the output
+        self.class_token = Parameter(zeros(1, 1, self.d_model))
 
         # we use a transformer encoder as the main part of the network.
         # There are num_encoder_layers in this encoder.
         self.transformer_encoder = TransformerEncoder(
             TransformerEncoderLayer(
-                d_model=embed_dim,
-                nhead=num_heads,
+                d_model=self.d_model,
+                nhead=nhead,
                 dropout=dropout
             ),
             num_encoder_layers
         )
 
-        self.MLP_head = Linear(embed_dim, num_classes)
+        self.MLP_head = Linear(self.d_model, num_classes)
 
         self.dropout = Dropout(dropout)
 
-        self.softmax = Softmax()
+        self.softmax = Softmax(dim=0)
 
         self.learning_rate = learning_rate
 
         self.accuracy = Accuracy()
 
     def forward(self, images: Tensor, text: Tensor) -> Tensor:
-        # create patch embeddings
-        image_patches = self.patch_embed(images)
-
-        # embed the text sequence
-        text_embedded = self.word_embed(text)
-
-        # concatenate image and text embeddings
-        x = cat((image_patches, text_embedded), dim=1)
+        # we first embed the image and text using the pretrained
+        # ViT and BERT models. The parameters of those will not be trained.
+        # so that training goes faster and we simply use the processed
+        # information from the two models
+        images_embedded = self.image_embedding(images)
+        text_embedded = self.text_embedding(text)
 
         # replicate class token as many times as there
         # are tokens in the tensor
-        n_class_tokens = self.class_token.expand(x.shape[0], -1, -1)
+        n_class_tokens = self.class_token.expand(images_embedded.shape[0], -1, -1)
 
-        # prepend class tokens to embeddings
-        x = cat((n_class_tokens, x), dim=1)
-
-        # add positional encoding
-        x += self.positional_encoding
+        # concatenate the three tensors
+        x = cat((n_class_tokens, images_embedded, text_embedded), dim=1)
 
         x = self.transformer_encoder(x)
 
@@ -138,7 +102,7 @@ class UnifiedTransformer(LightningModule):
 
         # compute probabilities between 0 and 1
         # using the softmax function
-        return self.softmax(x, dim=0)
+        return self.softmax(x)
 
     def configure_optimizers(self) -> Tuple[List[Optimizer], List[LRSchedulerType]]:
         optimizer = Adam(self.parameters(), lr=self.learning_rate)
@@ -171,7 +135,8 @@ class UnifiedTransformer(LightningModule):
 
         self.log('val_loss', loss)
         self.log('val_acc', accuracy)
-
+        print('Validation Loss: ', loss)
+        print('Validation Accuracy: ', accuracy)
         return loss
 
     def test_step(self, batch: Tensor, batch_idx: int) -> Tensor:
@@ -184,7 +149,8 @@ class UnifiedTransformer(LightningModule):
 
         self.log('test_loss', loss)
         self.log('test_acc', accuracy)
-
+        print('Test Loss: ', loss)
+        print('Test Accuracy: ', accuracy)
         return loss
 
     def training_epoch_end(self, outs):
@@ -200,4 +166,4 @@ class UnifiedTransformer(LightningModule):
     def load(self) -> None:
         if isfile(self.filename):
             print("Loading model from: " + self.filename)
-            self.approximation_function.load_state_dict(load(self.filename))
+            self.load_state_dict(load(self.filename))

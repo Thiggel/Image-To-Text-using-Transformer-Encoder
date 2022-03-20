@@ -1,7 +1,7 @@
 from transformers import ViTModel
 from torch import Tensor
 
-from UnifiedTransformer.FrozenModule import FrozenModule
+from model.FrozenModule import FrozenModule
 
 
 class VisionEncoder(FrozenModule):

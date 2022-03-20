@@ -1,8 +1,7 @@
 from transformers import BertModel
 from torch import Tensor, zeros, ones, long
-from torch.nn import Module
 
-from UnifiedTransformer.FrozenModule import FrozenModule
+from model.FrozenModule import FrozenModule
 
 
 class TextEncoder(FrozenModule):
