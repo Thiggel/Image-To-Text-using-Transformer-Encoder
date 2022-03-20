@@ -6,7 +6,9 @@
 #SBATCH --output=job-%j.log
 #SBATCH --time=3-00:00:00
 #SBATCH --partition=gpu
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:v100:1
+#SBATCH --ntasks-per-node=12
+#SBATCH --mem=64G
 
 module purge
 module load Python/3.8.6-GCCcore-10.2.0

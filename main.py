@@ -27,8 +27,8 @@ if __name__ == '__main__':
     trainer = Trainer(
         max_epochs=300,
         gpus=(-1 if cuda.is_available() else 0),
-        callbacks=[EarlyStopping(monitor="val_loss")]
+       # callbacks=[EarlyStopping(monitor="val_loss")]
     )
 
     trainer.fit(model, data_module)
-
+    trainer.test(model, data_module)

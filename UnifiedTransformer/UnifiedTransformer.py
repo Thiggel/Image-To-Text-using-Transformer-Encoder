@@ -30,10 +30,10 @@ class UnifiedTransformer(LightningModule):
         self.image_embedding = VisionEncoder()
         self.text_embedding = TextEncoder()
 
-        assert (
-            self.image_embedding.model.config.hidden_size == self.text_embedding.model.config.hidden_size,
-            "The embedding dimensions for the pretrained image and text encoder must be the same"
-        )
+        #assert (
+        #    self.image_embedding.model.config.hidden_size == self.text_embedding.model.config.hidden_size,
+        #    "The embedding dimensions for the pretrained image and text encoder must be the same"
+        #)
 
         self.d_model = self.image_embedding.model.config.hidden_size
 
@@ -112,7 +112,8 @@ class UnifiedTransformer(LightningModule):
 
         self.log('val_loss', loss)
         self.log('val_acc', accuracy)
-
+        print('val_loss', loss)
+        print('val_acc', accuracy)
         return loss
 
     def test_step(self, batch: Tensor, batch_idx: int) -> Tensor:
@@ -125,7 +126,8 @@ class UnifiedTransformer(LightningModule):
 
         self.log('test_loss', loss)
         self.log('test_acc', accuracy)
-
+        print('test_loss', loss)
+        print('test_acc', accuracy)
         return loss
 
     def training_epoch_end(self, outs):
@@ -141,4 +143,4 @@ class UnifiedTransformer(LightningModule):
     def load(self) -> None:
         if isfile(self.filename):
             print("Loading model from: " + self.filename)
-            self.approximation_function.load_state_dict(load(self.filename))
+            self.load_state_dict(load(self.filename))
