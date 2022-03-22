@@ -17,9 +17,9 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
             questions_answers_file: str,
             transform: Optional[Callable] = None,
     ) -> None:
-        self.data = self.load_questions(questions_answers_file)
+        super().__init__()
 
-        super().__init__(sentence_list=self.word_list())
+        self.data = self.load_questions(questions_answers_file)
 
         self.questions = self.preprocess_text(self.data, text_key=1)
 
