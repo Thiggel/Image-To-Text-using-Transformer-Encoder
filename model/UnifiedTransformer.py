@@ -21,7 +21,8 @@ class UnifiedTransformer(LightningModule):
             nhead: int = 12,
             dropout: float = 0.1,
             learning_rate: float = 0.05,
-            filename: str = 'model.pt'
+            filename: str = 'model.pt',
+            convolutional_embedding: bool = False
     ) -> None:
         super().__init__()
 
@@ -33,7 +34,7 @@ class UnifiedTransformer(LightningModule):
         # class token is fed into the MLP head. Henceforth, we obtain
         # a processed sequence of embedded patches that we treat as
         # our 'image embedding'
-        self.image_embedding = VisionEncoder()
+        self.image_embedding = VisionEncoder(convolutional_embedding)
 
         # In the same way, we use a modified pretrained BERT model,
         # pretrained on various tasks including question answering

@@ -5,10 +5,21 @@ from model.FrozenModule import FrozenModule
 
 
 class VisionEncoder(FrozenModule):
-    def __init__(self) -> None:
-        super().__init__(ViTModel.from_pretrained("google/vit-base-patch16-224-in21k"))
+    def __init__(self, convolutional: bool = False) -> None:
+        model = ViTModel.from_pretrained("google/vit-base-patch16-224-in21k") \
+            if not convolutional \
+            else ViTModel.from_pretrained("facebook/detr-resnet-50")
+
+        super().__init__(model)
+
+        print(model)
 
     def forward(self, x: Tensor) -> Tensor:
+        # the forward method is redefined so that the last part of the model
+        # that uses the class token to classify the input is skipped.
+        # Therefore, only the processed sequence returned by the
+        # encoder is used as the output of this layer
+
         assert x is not None, "No input tensor specified"
 
         head_mask = self.model.get_head_mask(None, self.model.config.num_hidden_layers)

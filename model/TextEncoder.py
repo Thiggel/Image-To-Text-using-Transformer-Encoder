@@ -9,6 +9,12 @@ class TextEncoder(FrozenModule):
         super().__init__(BertModel.from_pretrained("bert-base-uncased"))
 
     def forward(self, x: Tensor) -> Tensor:
+        # the forward method is redefined so that the encoder
+        # output, being a processed version of the input sequence,
+        # is returned directly, so that its encoded information
+        # can be used to further process the text together
+        # with the image
+
         assert x is not None, "No input specified"
 
         input_shape = x.size()

@@ -7,5 +7,7 @@ class FrozenModule(Module):
 
         self.model = model
 
+        # go through all parameters and set them to
+        # non-trainable
         for _, param in self.model.named_parameters():
             param.requires_grad = False

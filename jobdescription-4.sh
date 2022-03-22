@@ -17,4 +17,4 @@ module load Boost/1.66.0-foss-2018a-Python-3.6.4
 
 source /data/$USER/.envs/python386-bachelors/bin/activate
 
-python3 main.py --dataset coco --image-embedding pure-attention
+python3 main.py --dataset visual-genome --image-embedding convolutional
