@@ -10,6 +10,11 @@ from datasets.visualgenome.VisualGenomeDataModule import VisualGenomeDataModule
 from model.UnifiedTransformer import UnifiedTransformer
 
 if __name__ == '__main__':
+    from transformers import BertTokenizer
+    tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+    print(tokenizer("hello").input_ids[0])
+    exit()
+
     parser = ArgumentParser()
     parser.add_argument('--dataset')
     parser.add_argument('--image-embedding')
