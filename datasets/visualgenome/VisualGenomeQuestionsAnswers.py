@@ -75,7 +75,7 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
         return image
 
     def load_target(self, index: int) -> Tensor:
-        return tensor(self.vocab[self.data[index][2]])
+        return tensor(self.tokenizer(self.data[index][2]).input_ids[0])
 
     def __getitem__(self, index: int) -> Tuple[Tuple[Any, Tensor], Tensor]:
         # transform target word to numeric tensor using vocab
