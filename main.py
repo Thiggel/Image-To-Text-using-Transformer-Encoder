@@ -31,6 +31,8 @@ if __name__ == '__main__':
         filename=f'{saved_dir}/{dumps(vars(arguments))}.pt',
         convolutional_embedding=convolutional_embedding
     )
+    
+    print('Hyper Parameters: ', arguments)
 
     # if a with the given hyper parameters model already exists,
     # then we load it

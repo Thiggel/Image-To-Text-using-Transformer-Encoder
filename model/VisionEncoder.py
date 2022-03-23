@@ -12,8 +12,6 @@ class VisionEncoder(FrozenModule):
 
         super().__init__(model)
 
-        print(model)
-
     def forward(self, x: Tensor) -> Tensor:
         # the forward method is redefined so that the last part of the model
         # that uses the class token to classify the input is skipped.

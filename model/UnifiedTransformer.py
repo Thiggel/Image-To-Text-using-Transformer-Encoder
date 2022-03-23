@@ -156,7 +156,8 @@ class UnifiedTransformer(LightningModule):
 
     def training_epoch_end(self, outs):
         self.log('train_acc_epoch', self.accuracy)
-
+        loss = compute_epoch_loss_from_outputs(outputs)
+        print('Training loss for Epoch: ', loss)
         # save the model after every epoch
         self.save()
 
