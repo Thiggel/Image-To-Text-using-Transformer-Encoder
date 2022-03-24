@@ -39,7 +39,7 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
         
         return token_list[0] if len(token_list) == 1 else token_list
 
-    def preprocess_datapoint(self, datapoint) -> Tuple[int, str, str]:
+    def preprocess_datapoint(self, datapoint) -> Tuple[int, str, int]:
         answer = self.preprocess_answer(datapoint['answer'])
 	# we filter out all the answers that contain
         # more than one word, as we don't train our model
@@ -48,7 +48,7 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
         if len(answer) == 3:
             return datapoint['image_id'], datapoint['question'], answer[1]
 
-    def load_questions(self, question_answers_file: str) -> List[Tuple[int, str, str]]:
+    def load_questions(self, question_answers_file: str) -> List[Tuple[int, str, int]]:
         with open(question_answers_file, 'r') as file:
             json = load(file)
 
