@@ -17,7 +17,7 @@ class ImageTextDataset(Dataset):
             # create numeric token lists out of raw text
             self.create_vocab_indices(item[text_key])
             for item in data
-        ], padding_value=0).transpose(0, 1)
+        ], padding_value=self.tokenizer('[PAD]').input_ids[0]).transpose(0, 1)
 
     def create_vocab_indices(self, caption: str) -> Tensor:
         # convert a string to a list of token indices in the vocab
