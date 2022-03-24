@@ -20,7 +20,6 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
         super().__init__()
 
         self.data = self.load_questions(questions_answers_file)
-
         self.questions = self.preprocess_text(self.data, text_key=1)
 
         # images are provided in two downloadable
@@ -36,11 +35,10 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
         self.num_classes = self.vocab_size
 
     def preprocess_answer(self, answer: str) -> List:
-        return self.tokenizer(answer.replace('.', ''), return_tensors="pt").input_ids
+        return self.tokenizer(answer.replace('.', ''), return_tensors="pt").input_ids[0]
 
     def preprocess_datapoint(self, datapoint) -> Tuple[int, str, str]:
         answer = self.preprocess_answer(datapoint['answer'])
-
         # we filter out all the answers that contain
         # more than one word, as we don't train our model
         # on generating sentences but just classifying
@@ -75,6 +73,7 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
         return image
 
     def load_target(self, index: int) -> Tensor:
+        print(self.data[index])
         return tensor(self.data[index][2])
 
     def __getitem__(self, index: int) -> Tuple[Tuple[Any, Tensor], Tensor]:
@@ -91,7 +90,6 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
 
         if isinstance(image, Tensor):
             image = image.float()
-
         return (image, question), answer
 
     def word_list(self) -> List[str]:

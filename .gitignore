@@ -13,3 +13,4 @@ saved/
 **/__pycache__/
 study.db
 *.job
+*.log

@@ -1,0 +1,116 @@
+Lmod has detected the following error: These module(s) or extension(s) exist
+but cannot be loaded as requested: "binutils/2.28-GCCcore-6.4.0"
+   Try: "module spider binutils/2.28-GCCcore-6.4.0" to see how to load the
+module(s).
+
+
+
+Some weights of the model checkpoint at bert-base-uncased were not used when initializing BertModel: ['cls.predictions.transform.LayerNorm.bias', 'cls.seq_relationship.bias', 'cls.predictions.transform.LayerNorm.weight', 'cls.predictions.transform.dense.weight', 'cls.predictions.decoder.weight', 'cls.predictions.bias', 'cls.seq_relationship.weight', 'cls.predictions.transform.dense.bias']
+- This IS expected if you are initializing BertModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing BertModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+GPU available: True, used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+Set SLURM handle signals.
+
+  | Name                | Type               | Params
+-----------------------------------------------------------
+0 | image_embedding     | VisionEncoder      | 86.4 M
+1 | text_embedding      | TextEncoder        | 109 M 
+2 | transformer_encoder | TransformerEncoder | 33.1 M
+3 | MLP_head            | Linear             | 23.5 M
+4 | dropout             | Dropout            | 0     
+5 | softmax             | Softmax            | 0     
+6 | accuracy            | Accuracy           | 0     
+-----------------------------------------------------------
+56.6 M    Trainable params
+195 M     Non-trainable params
+252 M     Total params
+1,009.710 Total estimated model params size (MB)
+Hyper Parameters:  Namespace(dataset='visual-genome', image_embedding='pure-attention')
+Validation sanity check: 0it [00:00, ?it/s]Validation sanity check:   0%|          | 0/1 [00:00<?, ?it/s]/data/s3894479/BachelorsProject/datasets/visualgenome/VisualGenomeQuestionsAnswers.py:78: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  return tensor(self.data[index][2])
+Traceback (most recent call last):
+  File "main.py", line 46, in <module>
+    trainer.fit(model, data_module)
+  File "/data/s3894479/.envs/python386-bachelors/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py", line 740, in fit
+    self._call_and_handle_interrupt(
+  File "/data/s3894479/.envs/python386-bachelors/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py", line 685, in _call_and_handle_interrupt
+    return trainer_fn(*args, **kwargs)
+  File "/data/s3894479/.envs/python386-bachelors/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py", line 777, in _fit_impl
+    self._run(model, ckpt_path=ckpt_path)
+  File "/data/s3894479/.envs/python386-bachelors/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py", line 1199, in _run
+    self._dispatch()
+  File "/data/s3894479/.envs/python386-bachelors/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py", line 1279, in _dispatch
+    self.training_type_plugin.start_training(self)
+  File "/data/s3894479/.envs/python386-bachelors/lib/python3.8/site-packages/pytorch_lightning/plugins/training_type/training_type_plugin.py", line 202, in start_training
+    self._results = trainer.run_stage()
+  File "/data/s3894479/.envs/python386-bachelors/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py", line 1289, in run_stage
+    return self._run_train()
+  File "/data/s3894479/.envs/python386-bachelors/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py", line 1311, in _run_train
+    self._run_sanity_check(self.lightning_module)
+  File "/data/s3894479/.envs/python386-bachelors/lib/python3.8/site-packages/pytorch_lightning/trainer/trainer.py", line 1375, in _run_sanity_check
+    self._evaluation_loop.run()
+  File "/data/s3894479/.envs/python386-bachelors/lib/python3.8/site-packages/pytorch_lightning/loops/base.py", line 145, in run
+    self.advance(*args, **kwargs)
+  File "/data/s3894479/.envs/python386-bachelors/lib/python3.8/site-packages/pytorch_lightning/loops/dataloader/evaluation_loop.py", line 110, in advance
+    dl_outputs = self.epoch_loop.run(dataloader, dataloader_idx, dl_max_batches, self.num_dataloaders)
+  File "/data/s3894479/.envs/python386-bachelors/lib/python3.8/site-packages/pytorch_lightning/loops/base.py", line 145, in run
+    self.advance(*args, **kwargs)
+  File "/data/s3894479/.envs/python386-bachelors/lib/python3.8/site-packages/pytorch_lightning/loops/epoch/evaluation_epoch_loop.py", line 122, in advance
+    output = self._evaluation_step(batch, batch_idx, dataloader_idx)
+  File "/data/s3894479/.envs/python386-bachelors/lib/python3.8/site-packages/pytorch_lightning/loops/epoch/evaluation_epoch_loop.py", line 217, in _evaluation_step
+    output = self.trainer.accelerator.validation_step(step_kwargs)
+  File "/data/s3894479/.envs/python386-bachelors/lib/python3.8/site-packages/pytorch_lightning/accelerators/accelerator.py", line 239, in validation_step
+    return self.training_type_plugin.validation_step(*step_kwargs.values())
+  File "/data/s3894479/.envs/python386-bachelors/lib/python3.8/site-packages/pytorch_lightning/plugins/training_type/training_type_plugin.py", line 219, in validation_step
+    return self.model.validation_step(*args, **kwargs)
+  File "/data/s3894479/BachelorsProject/model/UnifiedTransformer.py", line 134, in validation_step
+    loss = cross_entropy(predicted, targets)
+  File "/data/s3894479/.envs/python386-bachelors/lib/python3.8/site-packages/torch/nn/functional.py", line 2996, in cross_entropy
+    return torch._C._nn.cross_entropy_loss(input, target, weight, _Reduction.get_enum(reduction), ignore_index, label_smoothing)
+RuntimeError: 0D or 1D target tensor expected, multi-target not supported
+
+
+###############################################################################
+Peregrine Cluster
+Job 23354180 for user 's3894479'
+Finished at: Wed Mar 23 14:32:13 CET 2022
+
+Job details:
+============
+
+Job ID              : 23354180
+Name                : MultiModalTransformer
+User                : s3894479
+Partition           : gpu
+Nodes               : pg-gpu37
+Number of Nodes     : 1
+Cores               : 12
+Number of Tasks     : 1
+State               : FAILED
+Submit              : 2022-03-23T14:02:20
+Start               : 2022-03-23T14:21:01
+End                 : 2022-03-23T14:32:13
+Reserved walltime   : 3-00:00:00
+Used walltime       :   00:11:12
+Used CPU time       :   00:09:23 (efficiency:  6.99%)
+% User (Computation): 97.86%
+% System (I/O)      :  2.14%
+Mem reserved        : 64G
+Max Mem (Node/step) : 7.60G (pg-gpu37, per node)
+Full Max Mem usage  : 7.60G
+Total Disk Read     : 6.06M
+Total Disk Write    : 51.51K
+Average GPU usage   : 0.0% (pg-gpu37)
+
+
+Acknowledgements:
+=================
+
+Please see this page for information about acknowledging Peregrine in your publications:
+
+https://wiki.hpc.rug.nl/peregrine/introduction/scientific_output
+
+################################################################################
