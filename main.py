@@ -24,6 +24,7 @@ if __name__ == '__main__':
     # 1. the dataset and 2. whether images are processed using convolution
     # or pure attention
     data_module = CocoDataModule() if arguments.dataset == 'coco' else VisualGenomeDataModule()
+    exit()
     convolutional_embedding = arguments.image_embedding == 'convolutional'
 
     model = UnifiedTransformer(

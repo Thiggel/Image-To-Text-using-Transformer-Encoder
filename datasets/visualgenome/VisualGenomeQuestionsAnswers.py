@@ -21,7 +21,7 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
 
         self.data = self.load_questions(questions_answers_file)
         self.questions = self.preprocess_text(self.data, text_key=1)
-
+        print(self.data[:20])
         # images are provided in two downloadable
         # packages, which is why we have to check
         # where an image is when loading it
@@ -35,16 +35,18 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
         self.num_classes = self.vocab_size
 
     def preprocess_answer(self, answer: str) -> List:
-        return self.tokenizer(answer.replace('.', ''), return_tensors="pt").input_ids[0]
+        token_list = self.tokenizer(answer.replace('.', ''), return_tensors="pt").input_ids
+        
+        return token_list[0] if len(token_list) == 1 else token_list
 
     def preprocess_datapoint(self, datapoint) -> Tuple[int, str, str]:
         answer = self.preprocess_answer(datapoint['answer'])
-        # we filter out all the answers that contain
+	# we filter out all the answers that contain
         # more than one word, as we don't train our model
         # on generating sentences but just classifying
         # single words
-        if len(answer) == 1:
-            return datapoint['image_id'], datapoint['question'], answer[0]
+        if len(answer) == 3:
+            return datapoint['image_id'], datapoint['question'], answer[1]
 
     def load_questions(self, question_answers_file: str) -> List[Tuple[int, str, str]]:
         with open(question_answers_file, 'r') as file:
@@ -79,7 +81,7 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
     def __getitem__(self, index: int) -> Tuple[Tuple[Any, Tensor], Tensor]:
         # transform target word to numeric tensor using vocab
         answer = self.load_target(index)
-
+        print(answer, type(answer))
         question = self.questions[index]
 
         # get image tensor
