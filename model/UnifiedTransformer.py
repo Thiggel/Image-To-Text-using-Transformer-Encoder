@@ -124,9 +124,12 @@ class UnifiedTransformer(LightningModule):
 
         self.log('train_loss', loss)
 
+        if batch_idx % 1000 == 0:
+            print("Train Loss: ", loss)
+
         return loss
 
-    def validation_step(self, batch: Tensor, batch_idx: int) -> Tensor:
+    def validation_step(self, batch: Tensor, _) -> Tensor:
         # get columns of batch
         [images, captions], targets = batch
 
@@ -136,11 +139,13 @@ class UnifiedTransformer(LightningModule):
 
         self.log('val_loss', loss)
         self.log('val_acc', accuracy)
+
         print('Validation Loss: ', loss)
         print('Validation Accuracy: ', accuracy)
+
         return loss
 
-    def test_step(self, batch: Tensor, batch_idx: int) -> Tensor:
+    def test_step(self, batch: Tensor, _) -> Tensor:
         # get columns of batch
         [images, captions], targets = batch
 
@@ -150,14 +155,13 @@ class UnifiedTransformer(LightningModule):
 
         self.log('test_loss', loss)
         self.log('test_acc', accuracy)
+
         print('Test Loss: ', loss)
         print('Test Accuracy: ', accuracy)
+
         return loss
 
-    def training_epoch_end(self, outs):
-        self.log('train_acc_epoch', self.accuracy)
-        loss = compute_epoch_loss_from_outputs(outputs)
-        print('Training loss for Epoch: ', loss)
+    def training_epoch_end(self, _):
         # save the model after every epoch
         self.save()
 
