@@ -10,6 +10,22 @@ from datasets.visualgenome.VisualGenomeDataModule import VisualGenomeDataModule
 from model.UnifiedTransformer import UnifiedTransformer
 
 if __name__ == '__main__':
+    model = UnifiedTransformer(
+        num_classes=10
+    )
+
+    import PIL
+    import torchvision
+    from transformers import BertTokenizer
+    import torch
+
+    image = torchvision.transforms.Resize((224, 224))(torchvision.transforms.PILToTensor()(PIL.Image.open('cat.jpg'))).float()
+    tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+
+    print(model(image.unsqueeze(0), torch.tensor(tokenizer("A cat").input_ids).unsqueeze(0)))
+
+    exit()
+
     parser = ArgumentParser()
     parser.add_argument('--dataset')
     parser.add_argument('--image-embedding')
