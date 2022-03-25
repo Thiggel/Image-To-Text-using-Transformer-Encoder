@@ -21,7 +21,7 @@ class ImageTextDataset(Dataset):
 
     def create_vocab_indices(self, caption: str) -> Tensor:
         # convert a string to a list of token indices in the vocab
-        return tensor(self.tokenizer(caption).input_ids[0], dtype=long)
+        return tensor(self.tokenizer(caption).input_ids, dtype=long)
 
     @property
     def vocab_size(self):

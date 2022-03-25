@@ -21,7 +21,7 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
 
         self.data = self.load_questions(questions_answers_file)
         self.questions = self.preprocess_text(self.data, text_key=1)
-        print(self.data[:20])
+        
         # images are provided in two downloadable
         # packages, which is why we have to check
         # where an image is when loading it
@@ -75,13 +75,11 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
         return image
 
     def load_target(self, index: int) -> Tensor:
-        print(self.data[index])
-        return tensor(self.data[index][2])
+        return self.data[index][2]
 
     def __getitem__(self, index: int) -> Tuple[Tuple[Any, Tensor], Tensor]:
         # transform target word to numeric tensor using vocab
         answer = self.load_target(index)
-        print(answer, type(answer))
         question = self.questions[index]
 
         # get image tensor
@@ -103,3 +101,4 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
 
     def __len__(self) -> int:
         return len(self.data)
+

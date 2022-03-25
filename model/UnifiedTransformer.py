@@ -69,7 +69,7 @@ class UnifiedTransformer(LightningModule):
 
         self.dropout = Dropout(dropout)
 
-        self.softmax = Softmax(dim=0)
+        self.softmax = Softmax(dim=1)
 
         self.learning_rate = learning_rate
 
