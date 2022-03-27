@@ -10,6 +10,7 @@ from datasets.coco.CocoDataModule import CocoDataModule
 from datasets.visualgenome.VisualGenomeDataModule import VisualGenomeDataModule
 from model.UnifiedTransformer import UnifiedTransformer
 
+
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--dataset')

@@ -20,7 +20,7 @@ class UnifiedTransformer(LightningModule):
             num_encoder_layers: int = 6,
             nhead: int = 12,
             dropout: float = 0.1,
-            learning_rate: float = 0.05,
+            learning_rate: float = 0.001,
             filename: str = 'model.pt',
             convolutional_embedding: bool = False
     ) -> None:
