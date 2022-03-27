@@ -5,12 +5,11 @@ from torch.nn import Module
 
 class VisionEncoder(Module):
     def __init__(self, convolutional: bool = False) -> None:
-        model = ViTModel.from_pretrained("google/vit-base-patch16-224-in21k") \
+        super().__init__()
+        self.model = ViTModel.from_pretrained("google/vit-base-patch16-224-in21k") \
             if not convolutional \
             else ViTModel.from_pretrained("facebook/detr-resnet-50")
-
-        super().__init__(model)
-
+        
     def forward(self, x: Tensor) -> Tensor:
         # the forward method is redefined so that the last part of the model
         # that uses the class token to classify the input is skipped.

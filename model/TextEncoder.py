@@ -5,7 +5,8 @@ from torch.nn import Module
 
 class TextEncoder(Module):
     def __init__(self) -> None:
-        super().__init__(BertModel.from_pretrained("bert-base-uncased"))
+        super().__init__()
+        BertModel.from_pretrained("bert-base-uncased")
 
     def forward(self, x: Tensor) -> Tensor:
         # the forward method is redefined so that the encoder
