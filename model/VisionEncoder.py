@@ -1,10 +1,9 @@
 from transformers import ViTModel
 from torch import Tensor
+from torch.nn import Module
 
-from model.FrozenModule import FrozenModule
 
-
-class VisionEncoder(FrozenModule):
+class VisionEncoder(Module):
     def __init__(self, convolutional: bool = False) -> None:
         model = ViTModel.from_pretrained("google/vit-base-patch16-224-in21k") \
             if not convolutional \

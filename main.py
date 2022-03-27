@@ -1,4 +1,5 @@
 from pytorch_lightning import Trainer
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from torch import cuda
 from os.path import exists
 from os import mkdir
@@ -40,7 +41,8 @@ if __name__ == '__main__':
 
     trainer = Trainer(
         max_epochs=300,
-        gpus=(-1 if cuda.is_available() else 0)
+        gpus=(-1 if cuda.is_available() else 0),
+	callbacks=[EarlyStopping(monitor="val_loss")]
     )
 
     trainer.fit(model, data_module)

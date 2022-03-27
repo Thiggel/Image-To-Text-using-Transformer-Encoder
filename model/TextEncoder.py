@@ -1,10 +1,9 @@
 from transformers import BertModel
 from torch import Tensor, zeros, ones, long
+from torch.nn import Module
 
-from model.FrozenModule import FrozenModule
 
-
-class TextEncoder(FrozenModule):
+class TextEncoder(Module):
     def __init__(self) -> None:
         super().__init__(BertModel.from_pretrained("bert-base-uncased"))
 
