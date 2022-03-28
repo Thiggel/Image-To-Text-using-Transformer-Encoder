@@ -23,8 +23,6 @@ class CocoTrueAndFalseCaptions(ImageTextDataset):
         self.image_dir = image_dir
         self.transform = transform
 
-        self.captions = self.preprocess_text(self.annotations, 'caption')
-
         # the output should just be a number between 0 and 1,
         # denoting the truth value of the caption
         # in regard to the image
@@ -42,7 +40,7 @@ class CocoTrueAndFalseCaptions(ImageTextDataset):
 
         return image
 
-    def __getitem__(self, index: int) -> Tuple[Tuple[Any, Tensor], int]:
+    def __getitem__(self, index: int) -> Tuple[Tuple[Any, str], int]:
         # target is 1 if index is within size of annotations
         # otherwise it is 0, since a wrong caption is chosen
         target = int(index < self.annotations_size)
@@ -62,10 +60,10 @@ class CocoTrueAndFalseCaptions(ImageTextDataset):
         # make sure we don't choose a correct caption as the false one.
         # Therefore, we take a caption which is 100 indexes further down
         # the array
-        caption = self.captions[
+        caption = self.annotations[
             index if target == 1
             else (index + 100) % self.annotations_size
-        ]
+        ]['caption']
 
         return (image, caption), target
 
