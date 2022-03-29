@@ -6,8 +6,7 @@ from zipfile import ZipFile
 from typing import List, Sequence
 from torch.utils.data import random_split, Subset
 from progressbar import ProgressBar
-
-from datasets.ImageTextDataset import ImageTextDataset
+from torch.utils.data import Dataset
 
 
 class DownloadProgressBar():
@@ -35,8 +34,8 @@ class ImageTextDataModule(LightningDataModule):
         self.image_size = 224
 
     @staticmethod
-    def split_dataset(dataset: ImageTextDataset) -> List[Subset[ImageTextDataset]]:
-        size = len(dataset)
+    def split_dataset(dataset: Dataset) -> List[Subset[Dataset]]:
+        size = dataset.__len__
 
         # get 70% for the train set
         train_size = int(size // 1.25)

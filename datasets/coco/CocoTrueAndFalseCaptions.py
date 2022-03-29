@@ -3,11 +3,10 @@ from typing import Optional, Callable, Tuple, Any, List
 from PIL import Image
 from json import load
 from os.path import join
+from torch.utils.data import Dataset
 
-from datasets.ImageTextDataset import ImageTextDataset
 
-
-class CocoTrueAndFalseCaptions(ImageTextDataset):
+class CocoTrueAndFalseCaptions(Dataset):
 
     def __init__(
             self,
@@ -66,10 +65,6 @@ class CocoTrueAndFalseCaptions(ImageTextDataset):
         ]['caption']
 
         return (image, caption), target
-
-    @property
-    def sequence_length(self) -> int:
-        return self.captions.shape[1]
 
     def __len__(self) -> int:
         # there is one true and one false caption

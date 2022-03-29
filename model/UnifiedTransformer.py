@@ -1,12 +1,11 @@
 from torch import Tensor, cat, zeros, save, load
-from torch.nn import Parameter, TransformerEncoder, TransformerEncoderLayer, Linear, Dropout, Softmax
+from torch.nn import Parameter, TransformerEncoder, TransformerEncoderLayer, Linear, Dropout, Softmax, MSELoss
 from torch.optim import Adam, Optimizer
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from pytorch_lightning.utilities.types import LRSchedulerType
 from typing import List, Tuple
 from pytorch_lightning import LightningModule
 from torchmetrics import Accuracy
-from torch.nn.functional import cross_entropy
 from os.path import isfile
 
 from model.VisionEncoder import VisionEncoder
@@ -73,12 +72,16 @@ class UnifiedTransformer(LightningModule):
 
         self.learning_rate = learning_rate
 
+        # Training/Testing:
+
         self.accuracy = Accuracy()
 
-    def forward(self, images: Tensor, text: Tensor) -> Tensor:
+        self.loss_function = MSELoss()
+
+    def forward(self, images: Tensor, text: List) -> Tensor:
         # we first embed the image and text using the pretrained
         # ViT and BERT models. The parameters of those will not be trained.
-        # so that training goes faster and we simply use the processed
+        # so that training goes faster, and we simply use the processed
         # information from the two models
         images_embedded = self.image_embedding(images)
         text_embedded = self.text_embedding(text)
@@ -124,9 +127,6 @@ class UnifiedTransformer(LightningModule):
 
         self.log('train_loss', loss)
 
-        if batch_idx % 1000 == 0:
-            print("Train Loss: ", loss)
-
         return loss
 
     def validation_step(self, batch: Tensor, _) -> Tensor:
@@ -139,9 +139,6 @@ class UnifiedTransformer(LightningModule):
 
         self.log('val_loss', loss)
         self.log('val_acc', accuracy)
-
-        print('Validation Loss: ', loss)
-        print('Validation Accuracy: ', accuracy)
 
         return loss
 
@@ -156,9 +153,6 @@ class UnifiedTransformer(LightningModule):
         self.log('test_loss', loss)
         self.log('test_acc', accuracy)
 
-        print('Test Loss: ', loss)
-        print('Test Accuracy: ', accuracy)
-
         return loss
 
     def training_epoch_end(self, _):
@@ -166,10 +160,8 @@ class UnifiedTransformer(LightningModule):
         self.save()
 
     def save(self) -> None:
-        print("Saving model at: " + self.filename)
         save(self.state_dict(), self.filename)
 
     def load(self) -> None:
         if isfile(self.filename):
-            print("Loading model from: " + self.filename)
             self.load_state_dict(load(self.filename))

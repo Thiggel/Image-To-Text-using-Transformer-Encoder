@@ -11,6 +11,45 @@ from datasets.visualgenome.VisualGenomeDataModule import VisualGenomeDataModule
 from model.UnifiedTransformer import UnifiedTransformer
 
 if __name__ == '__main__':
+
+    model = UnifiedTransformer(
+        num_classes=2,
+    )
+
+    from PIL import Image
+    import torchvision.transforms as transforms
+    from torch.nn.functional import cross_entropy
+    from torch import tensor
+    import torch
+    from torch.optim import Adam, Optimizer
+
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.PILToTensor()
+    ])
+
+    image = transform(Image.open('cat.jpg')).float()
+
+    optimizer = Adam(model.parameters(), lr=0.0001)
+
+    loss_fn = torch.nn.NLLLoss()
+
+    while True:
+        output = model(image.unsqueeze(0), ["A cat lying on a table."])
+
+        target = tensor([1, 0]).unsqueeze(0)
+
+        print(output.shape, target.shape)
+
+        loss = loss_fn(output.unsqueeze(0), target)
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        print(output, loss)
+
+    exit()
     parser = ArgumentParser()
     parser.add_argument('--dataset')
     parser.add_argument('--image-embedding')

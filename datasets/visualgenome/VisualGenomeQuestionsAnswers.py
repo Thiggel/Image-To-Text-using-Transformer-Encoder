@@ -3,12 +3,12 @@ from typing import Tuple, List, Optional, Callable, Any
 from itertools import chain
 from PIL import Image
 from os.path import join, exists
-from torch import tensor, Tensor
+from torch import Tensor
+from torch.utils.data import Dataset
+from transformers import BertTokenizer
 
-from datasets.ImageTextDataset import ImageTextDataset
 
-
-class VisualGenomeQuestionsAnswers(ImageTextDataset):
+class VisualGenomeQuestionsAnswers(Dataset):
 
     def __init__(
             self,
@@ -19,8 +19,9 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
     ) -> None:
         super().__init__()
 
+        self.tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+
         self.data = self.load_questions(questions_answers_file)
-        self.questions = self.preprocess_text(self.data, text_key=1)
         
         # images are provided in two downloadable
         # packages, which is why we have to check
@@ -41,7 +42,7 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
 
     def preprocess_datapoint(self, datapoint) -> Tuple[int, str, int]:
         answer = self.preprocess_answer(datapoint['answer'])
-	# we filter out all the answers that contain
+        # we filter out all the answers that contain
         # more than one word, as we don't train our model
         # on generating sentences but just classifying
         # single words
@@ -74,13 +75,13 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
 
         return image
 
-    def load_target(self, index: int) -> Tensor:
+    def load_target(self, index: int) -> int:
         return self.data[index][2]
 
-    def __getitem__(self, index: int) -> Tuple[Tuple[Any, Tensor], Tensor]:
+    def __getitem__(self, index: int) -> Tuple[Tuple[Any, str], int]:
         # transform target word to numeric tensor using vocab
         answer = self.load_target(index)
-        question = self.questions[index]
+        question = self.data[index][1]
 
         # get image tensor
         image = self.load_image(index)
@@ -94,10 +95,6 @@ class VisualGenomeQuestionsAnswers(ImageTextDataset):
 
     def word_list(self) -> List[str]:
         return list(chain.from_iterable([datapoint[1:] for datapoint in self.data]))
-
-    @property
-    def sequence_length(self) -> int:
-        return self.questions.shape[1]
 
     def __len__(self) -> int:
         return len(self.data)
