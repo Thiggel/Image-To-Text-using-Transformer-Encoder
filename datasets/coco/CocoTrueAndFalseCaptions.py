@@ -1,10 +1,10 @@
-from torch import Tensor
+from torch import Tensor, tensor
 from typing import Optional, Callable, Tuple, Any, List
 from PIL import Image
 from json import load
 from os.path import join
 from torch.utils.data import Dataset
-
+from torch.nn.functional import one_hot
 
 class CocoTrueAndFalseCaptions(Dataset):
 
@@ -42,7 +42,7 @@ class CocoTrueAndFalseCaptions(Dataset):
     def __getitem__(self, index: int) -> Tuple[Tuple[Any, str], int]:
         # target is 1 if index is within size of annotations
         # otherwise it is 0, since a wrong caption is chosen
-        target = int(index < self.annotations_size)
+        target = one_hot(tensor(int(index < self.annotations_size)), num_classes = self.num_classes).float()
 
         # if the index is bigger than the size of the annotations array,
         # we start from the beginning with the images and choose a false
@@ -60,7 +60,7 @@ class CocoTrueAndFalseCaptions(Dataset):
         # Therefore, we take a caption which is 100 indexes further down
         # the array
         caption = self.annotations[
-            index if target == 1
+            index if index < self.annotations_size
             else (index + 100) % self.annotations_size
         ]['caption']
 

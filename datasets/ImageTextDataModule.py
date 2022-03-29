@@ -35,7 +35,7 @@ class ImageTextDataModule(LightningDataModule):
 
     @staticmethod
     def split_dataset(dataset: Dataset) -> List[Subset[Dataset]]:
-        size = dataset.__len__
+        size = len(dataset)
 
         # get 70% for the train set
         train_size = int(size // 1.25)

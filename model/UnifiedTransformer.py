@@ -123,7 +123,7 @@ class UnifiedTransformer(LightningModule):
         [images, captions], targets = batch
 
         predicted = self.forward(images, captions)
-        loss = cross_entropy(predicted, targets)
+        loss = self.loss_function(predicted, targets)
 
         self.log('train_loss', loss)
 
@@ -134,11 +134,14 @@ class UnifiedTransformer(LightningModule):
         [images, captions], targets = batch
 
         predicted = self.forward(images, captions)
-        loss = cross_entropy(predicted, targets)
-        accuracy = self.accuracy(predicted, targets)
+        loss = self.loss_function(predicted, targets)
+        accuracy = self.accuracy(predicted, targets.long())
 
         self.log('val_loss', loss)
         self.log('val_acc', accuracy)
+
+	print("Validation Loss: ", loss)
+	print("Validation Accuracy: ", accuracy)
 
         return loss
 
@@ -147,8 +150,8 @@ class UnifiedTransformer(LightningModule):
         [images, captions], targets = batch
 
         predicted = self.forward(images, captions)
-        loss = cross_entropy(predicted, targets)
-        accuracy = self.accuracy(predicted, targets)
+        loss = self.loss_function(predicted, targets)
+        accuracy = self.accuracy(predicted, targets.long())
 
         self.log('test_loss', loss)
         self.log('test_acc', accuracy)

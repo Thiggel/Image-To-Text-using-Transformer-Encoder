@@ -11,6 +11,6 @@ class TextEncoder(Module):
         self.tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 
     def forward(self, x: str) -> Tensor:
-        x = self.tokenizer(x, return_tensors="pt")
+        x = self.tokenizer(x, return_tensors="pt", padding=True)
 
         return self.model(**x).last_hidden_state
