@@ -140,8 +140,8 @@ class UnifiedTransformer(LightningModule):
         self.log('val_loss', loss)
         self.log('val_acc', accuracy)
 
-	print("Validation Loss: ", loss)
-	print("Validation Accuracy: ", accuracy)
+        print("Validation Loss: ", loss)
+        print("Validation Accuracy: ", accuracy)
 
         return loss
 
