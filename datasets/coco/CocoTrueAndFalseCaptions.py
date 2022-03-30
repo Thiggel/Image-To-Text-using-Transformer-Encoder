@@ -1,8 +1,9 @@
-from torch import Tensor
+from torch import Tensor, tensor
 from typing import Optional, Callable, Tuple, Any, List
 from PIL import Image
 from json import load
 from os.path import join
+from torch.nn.functional import one_hot
 
 from datasets.ImageTextDataset import ImageTextDataset
 
@@ -67,7 +68,7 @@ class CocoTrueAndFalseCaptions(ImageTextDataset):
             else (index + 100) % self.annotations_size
         ]
 
-        return (image, caption), target
+        return (image, caption), one_hot(tensor(target), num_classes=self.num_classes).float()
 
     @property
     def sequence_length(self) -> int:
