@@ -42,7 +42,7 @@ class CocoTrueAndFalseCaptions(Dataset):
     def __getitem__(self, index: int) -> Tuple[Tuple[Any, str], int]:
         # target is 1 if index is within size of annotations
         # otherwise it is 0, since a wrong caption is chosen
-        target = one_hot(tensor(int(index < self.annotations_size)), num_classes = self.num_classes).float()
+        target = one_hot(tensor(int(index < self.annotations_size)), num_classes = self.num_classes).float().to('cuda')
 
         # if the index is bigger than the size of the annotations array,
         # we start from the beginning with the images and choose a false
