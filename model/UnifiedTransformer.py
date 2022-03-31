@@ -78,7 +78,7 @@ class UnifiedTransformer(LightningModule):
 
         self.loss_function = MSELoss()
 
-    def forward(self, images: Tensor, text: List) -> Tensor:
+    def forward(self, images: Tensor, text: Tensor) -> Tensor:
         # we first embed the image and text using the pretrained
         # ViT and BERT models. The parameters of those will not be trained.
         # so that training goes faster, and we simply use the processed
@@ -123,7 +123,10 @@ class UnifiedTransformer(LightningModule):
         [images, captions], targets = batch
 
         predicted = self.forward(images, captions)
+
+        print(predicted.shape, targets.shape)
         loss = self.loss_function(predicted, targets)
+        print(loss)
 
         self.log('train_loss', loss)
 
