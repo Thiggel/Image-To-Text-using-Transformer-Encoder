@@ -1,8 +1,7 @@
 from torch.utils.data import Dataset
 from typing import List, Union
-from torch.nn.utils.rnn import pad_sequence
 from transformers import BertTokenizer
-from torch import tensor, Tensor, long
+from torch import Tensor
 
 
 class ImageTextDataset(Dataset):
@@ -12,16 +11,7 @@ class ImageTextDataset(Dataset):
         self.tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 
     def preprocess_text(self, data: List, text_key: Union[str, int]) -> Tensor:
-        # pad each token list so that it has the same length
-        return pad_sequence([
-            # create numeric token lists out of raw text
-            self.create_vocab_indices(item[text_key])
-            for item in data
-        ], padding_value=self.tokenizer('[PAD]').input_ids[0]).transpose(0, 1)
-
-    def create_vocab_indices(self, caption: str) -> Tensor:
-        # convert a string to a list of token indices in the vocab
-        return tensor(self.tokenizer(caption).input_ids, dtype=long)
+        return self.tokenizer([item[text_key] for item in data], return_tensors="pt", padding=True)
 
     @property
     def vocab_size(self):

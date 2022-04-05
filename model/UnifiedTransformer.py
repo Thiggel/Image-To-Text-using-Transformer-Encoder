@@ -1,5 +1,5 @@
 from torch import Tensor, cat, zeros, save, load
-from torch.nn import Parameter, TransformerEncoder, TransformerEncoderLayer, Linear, Dropout, Softmax, MSELoss
+from torch.nn import Parameter, TransformerEncoder, TransformerEncoderLayer, Linear, Dropout, Softmax, CrossEntropyLoss
 from torch.optim import Adam, Optimizer
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from pytorch_lightning.utilities.types import LRSchedulerType
@@ -49,10 +49,6 @@ class UnifiedTransformer(LightningModule):
         # save our embedding dimension (taken from the embedding layers)
         self.d_model = self.image_embedding.model.config.hidden_size
 
-        # we append a class token when processing input, which is later used
-        # to classify the output
-        self.class_token = Parameter(zeros(1, 1, self.d_model))
-
         # we use a transformer encoder as the main part of the network.
         # There are num_encoder_layers in this encoder.
         self.transformer_encoder = TransformerEncoder(
@@ -76,7 +72,7 @@ class UnifiedTransformer(LightningModule):
 
         self.accuracy = Accuracy()
 
-        self.loss_function = MSELoss()
+        self.loss_function = CrossEntropyLoss()
 
     def forward(self, images: Tensor, text: Tensor) -> Tensor:
         # we first embed the image and text using the pretrained
@@ -86,16 +82,12 @@ class UnifiedTransformer(LightningModule):
         images_embedded = self.image_embedding(images)
         text_embedded = self.text_embedding(text)
 
-        # replicate class token as many times as there
-        # are tokens in the tensor
-        n_class_tokens = self.class_token.expand(images_embedded.shape[0], -1, -1)
-
         # concatenate the three tensors
-        x = cat((n_class_tokens, images_embedded, text_embedded), dim=1)
+        x = cat((text_embedded, images_embedded), dim=1)
 
         x = self.transformer_encoder(x)
 
-        # get the class embeddings out of all embeddings
+        # get the class tokens from the sequence
         final_class_token = x[:, 0]
 
         # lastly, feed it into the MLP
