@@ -17,7 +17,7 @@ if __name__ == '__main__':
     parser.add_argument('--image-embedding')
     arguments = parser.parse_args()
 
-    # create directory for saved models if not exists
+    # create directory for saved transformer if not exists
     saved_dir = 'saved'
     if not exists(saved_dir):
         mkdir(saved_dir)
@@ -25,16 +25,19 @@ if __name__ == '__main__':
     # using the command line arguments, two hyper parameters can be set
     # 1. the dataset and 2. whether images are processed using convolution
     # or pure attention
+    print("Loading and preprocessing the data set...", end=" ")
     data_module = CocoDataModule() if arguments.dataset == 'coco' else VisualGenomeDataModule()
     convolutional_embedding = arguments.image_embedding == 'convolutional'
+    print("Done!")
 
+    print("Loading model...", end=" ")
     model = UnifiedTransformer(
         num_classes=data_module.num_classes,
         filename=f'{saved_dir}/{dumps(vars(arguments))}.pt',
         convolutional_embedding=convolutional_embedding
     )
     
-    print('Hyper Parameters: ', arguments)
+    print('Done! Hyper Parameters: ', arguments)
 
     # if a with the given hyper parameters model already exists,
     # then we load it
@@ -46,5 +49,18 @@ if __name__ == '__main__':
         callbacks=[EarlyStopping(monitor="val_loss")]
     )
 
+    # first, find a good learning rate using the automatic learning rate finder
+    print("Calculating the optimal learning rate...", end=" ")
+
+    lr_finder = trainer.tuner.lr_find(model, datamodule=data_module)
+    optimal_lr = lr_finder.suggestion()
+
+    print(f"Done! Suggestion: learning_rate = {optimal_lr}")
+
+    model.learning_rate = optimal_lr
+
+    # train model on data set
     trainer.fit(model, data_module)
+
+    # lastly, test the model on the test set
     trainer.test(model, data_module)

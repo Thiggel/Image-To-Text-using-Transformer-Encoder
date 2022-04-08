@@ -11,7 +11,7 @@ class ImageTextDataset(Dataset):
         self.tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 
     def preprocess_text(self, data: List, text_key: Union[str, int]) -> Tensor:
-        return self.tokenizer([item[text_key] for item in data], return_tensors="pt", padding=True)
+        return self.tokenizer([item[text_key] for item in data], return_tensors="pt", padding=True).input_ids
 
     @property
     def vocab_size(self):

@@ -16,3 +16,4 @@ __pycache__
 study.db
 *.job
 *.log
+*.ckpt

@@ -30,7 +30,6 @@ class CocoDataModule(ImageTextDataModule):
                 transforms.PILToTensor()
             ])
         )
-        self.sequence_length = coco_full.sequence_length
         self.num_classes = coco_full.num_classes
 
         # split into train/test/val with 70/20/10 ratio

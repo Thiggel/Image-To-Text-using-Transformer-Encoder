@@ -1,5 +1,5 @@
-from torch import Tensor, cat, zeros, save, load
-from torch.nn import Parameter, TransformerEncoder, TransformerEncoderLayer, Linear, Dropout, Softmax, CrossEntropyLoss
+from torch import Tensor, cat, save, load
+from torch.nn import TransformerEncoder, TransformerEncoderLayer, Linear, Dropout, Sigmoid, BCELoss, TransformerDecoder, TransformerDecoderLayer
 from torch.optim import Adam, Optimizer
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from pytorch_lightning.utilities.types import LRSchedulerType
@@ -17,7 +17,7 @@ class UnifiedTransformer(LightningModule):
             self,
             num_classes: int,
             num_encoder_layers: int = 6,
-            nhead: int = 12,
+            n_head: int = 12,
             dropout: float = 0.1,
             learning_rate: float = 0.001,
             filename: str = 'model.pt',
@@ -27,7 +27,7 @@ class UnifiedTransformer(LightningModule):
         Process both text and images simultaneously for Visual Question Answering (VQA)
         :param num_classes: Number of classes for the eventual classifier (e.g. vocab size)
         :param num_encoder_layers: Depth of multi-modal transformer encoder block
-        :param nhead: Number of heads
+        :param n_head: Number of heads
         :param dropout: Dropout rate at end of model and in multi-modal transformer encoder block
         :param learning_rate: used in training (using ADAM optimizer)
         :param filename: where model will be saved after each epoch
@@ -64,7 +64,16 @@ class UnifiedTransformer(LightningModule):
         self.transformer_encoder = TransformerEncoder(
             TransformerEncoderLayer(
                 d_model=self.d_model,
-                nhead=nhead,
+                nhead=n_head,
+                dropout=dropout
+            ),
+            num_encoder_layers
+        )
+
+        self.decoder = TransformerDecoder(
+            TransformerDecoderLayer(
+                d_model=self.d_model,
+                nhead=n_head,
                 dropout=dropout
             ),
             num_encoder_layers
@@ -74,7 +83,7 @@ class UnifiedTransformer(LightningModule):
 
         self.dropout = Dropout(dropout)
 
-        self.softmax = Softmax(dim=1)
+        self.sigmoid = Sigmoid()
 
         self.learning_rate = learning_rate
 
@@ -82,7 +91,7 @@ class UnifiedTransformer(LightningModule):
 
         self.accuracy = Accuracy()
 
-        self.loss_function = CrossEntropyLoss()
+        self.loss_function = BCELoss()
 
     def forward(self, images: Tensor, text: List) -> Tensor:
         """
@@ -94,29 +103,26 @@ class UnifiedTransformer(LightningModule):
         """
 
         # we first embed the image and text using the pretrained
-        # ViT and BERT models. The parameters of those will not be trained.
+        # ViT and BERT transformer. The parameters of those will not be trained.
         # so that training goes faster, and we simply use the processed
-        # information from the two models
-        images_embedded = self.image_backbone(images)
-        text_embedded = self.text_backbone(text)
+        # information from the two transformer
+        images_encoded = self.image_backbone(images).transpose(0, 1)
+        text_encoded = self.text_backbone(text).transpose(0, 1)
 
-        # concatenate the three tensors
-        x = cat((text_embedded, images_embedded), dim=1)
-
-        x = self.transformer_encoder(x)
+        decoded_sequence = self.decoder(text_encoded, images_encoded).transpose(0, 1)
 
         # get the class tokens from the sequence (BERT appends a class token)
-        final_class_token = x[:, 0]
+        final_class_token = decoded_sequence[:, 0]
 
         # lastly, feed it into the MLP
-        x = self.MLP_head(final_class_token)
+        projected = self.MLP_head(final_class_token)
 
         # add dropout to prevent overfitting
-        x = self.dropout(x)
-
         # compute probabilities between 0 and 1
         # using the softmax function
-        return self.softmax(x)
+        probs = self.sigmoid(self.dropout(projected))
+
+        return probs
 
     def configure_optimizers(self) -> Tuple[List[Optimizer], List[LRSchedulerType]]:
         """
@@ -146,9 +152,7 @@ class UnifiedTransformer(LightningModule):
 
         predicted = self.forward(images, captions)
 
-        print(predicted.shape, targets.shape)
         loss = self.loss_function(predicted, targets)
-        print(loss)
 
         self.log('train_loss', loss)
 

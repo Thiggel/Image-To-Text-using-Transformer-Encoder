@@ -1,4 +1,4 @@
-from torch import Tensor, tensor
+from torch import Tensor, tensor, float
 from typing import Optional, Callable, Tuple, Any, List
 from PIL import Image
 from json import load
@@ -62,12 +62,13 @@ class CocoTrueAndFalseCaptions(ImageTextDataset):
         # make sure we don't choose a correct caption as the false one.
         # Therefore, we take a caption which is 100 indexes further down
         # the array
+
         caption = self.captions[
             index if target == 1
             else (index + 100) % self.annotations_size
         ]
 
-        return (image, caption), tensor(target)
+        return (image, caption), tensor([target], dtype=float)
 
     @property
     def sequence_length(self) -> int:
