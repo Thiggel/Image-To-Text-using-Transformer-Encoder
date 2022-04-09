@@ -1,5 +1,5 @@
-from torch import Tensor, cat, save, load
-from torch.nn import TransformerEncoder, TransformerEncoderLayer, Linear, Dropout, Sigmoid, BCELoss, TransformerDecoder, TransformerDecoderLayer
+from torch import Tensor, cat, save, load, round
+from torch.nn import Linear, Dropout, Sigmoid, BCELoss, TransformerDecoder, TransformerDecoderLayer
 from torch.optim import Adam, Optimizer
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from pytorch_lightning.utilities.types import LRSchedulerType
@@ -18,7 +18,7 @@ class UnifiedTransformer(LightningModule):
             num_classes: int,
             num_encoder_layers: int = 6,
             n_head: int = 12,
-            dropout: float = 0.1,
+            dropout: float = 0.01,
             learning_rate: float = 0.001,
             filename: str = 'model.pt',
             convolutional_embedding: bool = False
@@ -58,17 +58,6 @@ class UnifiedTransformer(LightningModule):
 
         # save our embedding dimension (taken from the embedding layers)
         self.d_model = self.image_backbone.model.config.hidden_size
-
-        # we use a transformer encoder as the main part of the network.
-        # There are num_encoder_layers in this encoder.
-        self.transformer_encoder = TransformerEncoder(
-            TransformerEncoderLayer(
-                d_model=self.d_model,
-                nhead=n_head,
-                dropout=dropout
-            ),
-            num_encoder_layers
-        )
 
         self.decoder = TransformerDecoder(
             TransformerDecoderLayer(
@@ -170,7 +159,7 @@ class UnifiedTransformer(LightningModule):
 
         predicted = self.forward(images, captions)
         loss = self.loss_function(predicted, targets)
-        accuracy = self.accuracy(predicted, targets.long())
+        accuracy = self.accuracy(round(predicted), targets.long())
 
         self.log('val_loss', loss)
         self.log('val_acc', accuracy)
@@ -192,7 +181,7 @@ class UnifiedTransformer(LightningModule):
 
         predicted = self.forward(images, captions)
         loss = self.loss_function(predicted, targets)
-        accuracy = self.accuracy(predicted, targets.long())
+        accuracy = self.accuracy(round(predicted), targets.long())
 
         self.log('test_loss', loss)
         self.log('test_acc', accuracy)

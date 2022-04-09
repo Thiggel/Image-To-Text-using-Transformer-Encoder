@@ -45,19 +45,8 @@ if __name__ == '__main__':
 
     trainer = Trainer(
         max_epochs=300,
-        gpus=(-1 if cuda.is_available() else 0),
-        callbacks=[EarlyStopping(monitor="val_loss")]
+        gpus=(-1 if cuda.is_available() else 0)
     )
-
-    # first, find a good learning rate using the automatic learning rate finder
-    print("Calculating the optimal learning rate...", end=" ")
-
-    lr_finder = trainer.tuner.lr_find(model, datamodule=data_module)
-    optimal_lr = lr_finder.suggestion()
-
-    print(f"Done! Suggestion: learning_rate = {optimal_lr}")
-
-    model.learning_rate = optimal_lr
 
     # train model on data set
     trainer.fit(model, data_module)
