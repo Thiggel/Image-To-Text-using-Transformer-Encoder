@@ -1,4 +1,4 @@
-from torch import Tensor, cat, save, load, round
+from torch import Tensor, cat, save, load
 from torch.nn import Linear, Dropout, Sigmoid, BCELoss, TransformerDecoder, TransformerDecoderLayer
 from torch.optim import Adam, Optimizer
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -108,7 +108,7 @@ class UnifiedTransformer(LightningModule):
 
         # add dropout to prevent overfitting
         # compute probabilities between 0 and 1
-        # using the softmax function
+        # using the sigmoid function
         probs = self.sigmoid(self.dropout(projected))
 
         return probs
@@ -122,7 +122,7 @@ class UnifiedTransformer(LightningModule):
         optimizer = Adam(self.parameters(), lr=self.learning_rate)
 
         scheduler = {
-            'scheduler': ReduceLROnPlateau(optimizer, patience=3),
+            'scheduler': ReduceLROnPlateau(optimizer, patience=5),
             'monitor': 'train_loss'
         }
 
@@ -159,7 +159,7 @@ class UnifiedTransformer(LightningModule):
 
         predicted = self.forward(images, captions)
         loss = self.loss_function(predicted, targets)
-        accuracy = self.accuracy(round(predicted), targets.long())
+        accuracy = self.accuracy(predicted, targets.long())
 
         self.log('val_loss', loss)
         self.log('val_acc', accuracy)
@@ -181,7 +181,7 @@ class UnifiedTransformer(LightningModule):
 
         predicted = self.forward(images, captions)
         loss = self.loss_function(predicted, targets)
-        accuracy = self.accuracy(round(predicted), targets.long())
+        accuracy = self.accuracy(predicted, targets.long())
 
         self.log('test_loss', loss)
         self.log('test_acc', accuracy)
