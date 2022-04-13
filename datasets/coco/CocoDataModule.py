@@ -10,10 +10,10 @@ class CocoDataModule(ImageTextDataModule):
     def __init__(self, batch_size: int = 32) -> None:
         super().__init__()
 
-        self.batch_size = batch_size
+        self.batch_size = batch_sizes
 
-        self.full_dir = 'train2017'
-        self.full_url = 'http://images.cocodataset.org/zips/train2017.zip'
+        self.full_dir = 'val2017'
+        self.full_url = 'http://images.cocodataset.org/zips/val2017.zip'
         self.full_annotations_file = 'annotations/captions_train2017.json'
 
         self.annotations_dir = 'annotations'

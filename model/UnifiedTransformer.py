@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 from torch import Tensor, cat, save, load
+=======
+from torch import Tensor, save, load, round
+>>>>>>> 15fde617b520696e3bfd8f72feb49a0e34302603
 from torch.nn import Linear, Dropout, Sigmoid, BCELoss, TransformerDecoder, TransformerDecoderLayer
 from torch.optim import Adam, Optimizer
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -54,7 +58,7 @@ class UnifiedTransformer(LightningModule):
         # so that they can be concatenated
         assert  \
             self.image_backbone.model.config.hidden_size == self.text_backbone.model.config.hidden_size, \
-            "The embedding dimensions for the pretrained image and text encoder must be the same"
+            "The embedding dimensions for the pretrained image and text encoders must be the same"
 
         # save our embedding dimension (taken from the embedding layers)
         self.d_model = self.image_backbone.model.config.hidden_size
@@ -98,7 +102,11 @@ class UnifiedTransformer(LightningModule):
         images_encoded = self.image_backbone(images).transpose(0, 1)
         text_encoded = self.text_backbone(text).transpose(0, 1)
 
+        print(images_encoded.shape, text_encoded.shape)
+
         decoded_sequence = self.decoder(text_encoded, images_encoded).transpose(0, 1)
+
+        print(decoded_sequence.shape)
 
         # get the class tokens from the sequence (BERT appends a class token)
         final_class_token = decoded_sequence[:, 0]
@@ -108,8 +116,8 @@ class UnifiedTransformer(LightningModule):
 
         # add dropout to prevent overfitting
         # compute probabilities between 0 and 1
-        # using the sigmoid function
-        probs = self.sigmoid(self.dropout(projected))
+        # using the softmax function
+        probs = self.sigmoid(self.dropout(projected)).flatten()
 
         return probs
 
@@ -156,6 +164,8 @@ class UnifiedTransformer(LightningModule):
         """
         # get columns of batch
         [images, captions], targets = batch
+
+        print(images, captions, targets)
 
         predicted = self.forward(images, captions)
         loss = self.loss_function(predicted, targets)
