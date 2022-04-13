@@ -68,7 +68,7 @@ class CocoTrueAndFalseCaptions(ImageTextDataset):
             else (index + 100) % self.annotations_size
         ]
 
-        return (image, caption), tensor([target], dtype=float)
+        return (image, caption), tensor(target, dtype=float)
 
     @property
     def sequence_length(self) -> int:

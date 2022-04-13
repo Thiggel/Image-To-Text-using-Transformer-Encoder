@@ -1,5 +1,4 @@
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from torch import cuda
 from os.path import exists
 from os import mkdir

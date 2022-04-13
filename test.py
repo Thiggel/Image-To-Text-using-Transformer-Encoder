@@ -1,56 +1,50 @@
-
-from transformers import BertTokenizer
-from PIL import Image
-import torchvision.transforms as transforms
-from torch import tensor
 import torch
 from torch.optim import Adam
-from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torchmetrics import Accuracy
 
-from datasets.ImageTextDataset import ImageTextDataset
+from datasets.coco.CocoDataModule import CocoDataModule
 from model.UnifiedTransformer import UnifiedTransformer
 
-
-tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-
 if __name__ == '__main__':
+
+    # using the command line arguments, two hyper parameters can be set
+    # 1. the dataset and 2. whether images are processed using convolution
+    # or pure attention
+    print("Loading and preprocessing the data set...", end=" ")
+    data_module = CocoDataModule()
+    train_dataloader = data_module.train_dataloader()
+    batch = next(iter(train_dataloader))
+    print("Done!")
+    print("Batch", batch)
+
+    print("Loading model...", end=" ")
     model = UnifiedTransformer(
-        num_classes=1
+        num_classes=data_module.num_classes
     )
-
-    transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.PILToTensor()
-    ])
-
-    t = ImageTextDataset()
-
-    # We try to fit the model just on two data points.
-    # If we fit it on one, it works, but even two doesn't work. Why?
-    image = transform(Image.open('cat.jpg')).float()
-    image2 = transform(Image.open('dog.jpg')).float()
-    images = torch.cat((image.unsqueeze(0), image2.unsqueeze(0)))
-    text = t.preprocess_text([["A cat lying on a table."], ["A dog lying on grass."]], 0)
+    print("Done!")
 
     optimizer = Adam(model.parameters(), lr=0.0001)
 
     loss_fn = torch.nn.BCELoss()
+    acc = Accuracy()
 
     while True:
+        [images, captions], targets = batch
+        targets = targets.float()
+
+        predicted = model(images, captions)
+
         optimizer.zero_grad()
 
-        output = model(images, text)
+        print("Predicted: ", predicted)
+        print("Targets: ", targets)
 
-        #from torchviz import make_dot
-        #import os
+        loss = loss_fn(predicted, targets)
+        accuracy = acc(predicted, targets.long())
 
-        #make_dot(output.mean(), params=dict(model.named_parameters())).render(directory=os.getcwd(), view=True)
-
-        #exit()
-
-        target = tensor([[1], [0]], dtype=torch.float)
-
-        loss = loss_fn(output, target)
+        print("Loss: ", loss)
+        print("Accuracy: ", accuracy)
+        print("\n\n\n\n")
 
         loss.backward()
 
