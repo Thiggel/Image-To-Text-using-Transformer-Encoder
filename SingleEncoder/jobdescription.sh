@@ -1,10 +1,10 @@
 #!/bin/bash
 
-#SBATCH --job-name=ImageCaptionTransformer
+#SBATCH --job-name=SingleEncoderTransformer
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=f.m.de.sousa.horta.osorio.laitenberger@student.rug.nl
 #SBATCH --output=job-%j.log
-#SBATCH --time=0-12:00:00
+#SBATCH --time=3-00:00:00
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:v100:1
 #SBATCH --ntasks-per-node=12

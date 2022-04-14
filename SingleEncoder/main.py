@@ -15,11 +15,12 @@ if __name__ == '__main__':
     )
 
     model = Model(
-        data_module.vocab_size
+        vocab_size=data_module.vocab_size,
+        pad_token=data_module.pad_token
     )
 
     trainer = Trainer(
-        max_epochs=10,
+        max_epochs=40,
         gpus=(-1 if cuda.is_available() else 0)
     )
 

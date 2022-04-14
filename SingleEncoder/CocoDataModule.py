@@ -18,7 +18,7 @@ class CocoCaptionGeneration(VisionDataset):
 
         self.coco = coco
         self.tokenizer = tokenizer
-        self.sequence_length = 128
+        self.sequence_length = 196
 
     def __getitem__(self, index) -> T_co:
         image, caption = self.coco[index]
@@ -36,7 +36,7 @@ class CocoCaptionGeneration(VisionDataset):
 
         padded = tokenized + [self.tokenizer('[PAD]').input_ids[1]] * (self.sequence_length - len(tokenized))
 
-        return [image, tensor(padded)], target
+        return [image.float(), tensor(padded)], target
 
     def __len__(self):
         return len(self.coco)
