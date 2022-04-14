@@ -1,12 +1,14 @@
 from pytorch_lightning import LightningModule
 from torch.nn import Embedding, Linear, Sigmoid, Softmax, Parameter, Dropout, CrossEntropyLoss, BCELoss
-from torch import Tensor, zeros, cat, round
+from torch import Tensor, zeros, cat, round, save, load
 from typing import Tuple, List
 from transformer_encoder import TransformerEncoder
 from transformer_encoder.utils import PositionalEncoding
 from torch.optim import Adam, Optimizer
 from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
 from pytorch_lightning.utilities.types import LRSchedulerType
+from os.path import isfile
+from torchmetrics import Accuracy
 
 from PatchEmbedding import PatchEmbedding
 
@@ -15,7 +17,7 @@ class Model(LightningModule):
     def __init__(
             self,
             vocab_size: int,
-            image_shape: Tuple = (1, 224, 224),
+            image_shape: Tuple = (3, 224, 224),
             patch_size: int = 16,
             embed_dim: int = 512,
             hidden_size: int = 2048,
@@ -24,9 +26,12 @@ class Model(LightningModule):
             output_dim: int = 1,
             dropout: float = 0.1,
             learning_rate: float = 1e-3,
-            pad_token: int = 0
+            pad_token: int = 0,
+            filename: str = 'model.pt'
     ) -> None:
         super().__init__()
+
+        self.filename = filename
 
         self.image_embedding = PatchEmbedding(
             image_shape, patch_size, embed_dim
@@ -44,6 +49,8 @@ class Model(LightningModule):
 
         self.linear = Linear(embed_dim, output_dim)
 
+        self.output_dim = output_dim
+
         self.output_activation = Softmax(dim=1) if output_dim > 1 else Sigmoid()
 
         self.dropout = Dropout(dropout)
@@ -55,6 +62,8 @@ class Model(LightningModule):
         self.loss_fn = CrossEntropyLoss() if output_dim > 1 else BCELoss()
 
         self.pad_token = pad_token
+
+        self.accuracy = Accuracy()
 
     def forward(self, images: Tensor, text: Tensor, mask: Tensor) -> Tensor:
         # convert images to patches and linearly project
@@ -82,17 +91,21 @@ class Model(LightningModule):
             self.linear(final_class_tokens)
         )
 
+        if self.output_dim == 1:
+            class_probs = class_probs.flatten()
+
         # add dropout to prevent overfitting
         return self.dropout(class_probs)
 
     def create_pad_mask(self, text: Tensor) -> Tensor:
         num_patches = self.image_embedding.num_patches
 
-        images_mask = Tensor([1]).repeat(text.shape[0], num_patches)
+        # + 1 for the class tokens
+        images_mask = Tensor([True]).repeat(text.shape[0], num_patches + 1)
 
-        captions_mask = text == self.pad_token
+        captions_mask = text != self.pad_token
 
-        full_mask = cat((Tensor(images_mask), captions_mask), dim=1)
+        full_mask = cat((images_mask, captions_mask), dim=1)
 
         return full_mask
 
@@ -125,6 +138,7 @@ class Model(LightningModule):
         loss = self.loss_fn(predicted, targets.float())
 
         self.log('train_loss', loss)
+        self.log('lr', self.scheduler.get_last_lr()[0], prog_bar=True)
 
         return loss
 
@@ -155,3 +169,24 @@ class Model(LightningModule):
         :return: The loss for that batch
         """
         return self.validation_step(batch, batch_idx)
+
+    def training_epoch_end(self, _) -> None:
+        """
+        Hook that fires after each epoch.
+        """
+
+        # save the model after every epoch
+        self.save()
+
+    def save(self) -> None:
+        """
+        Save model to given filename
+        """
+        save(self.state_dict(), self.filename)
+
+    def load(self) -> None:
+        """
+        Load model from given filename
+        """
+        if isfile(self.filename):
+            self.load_state_dict(load(self.filename))
