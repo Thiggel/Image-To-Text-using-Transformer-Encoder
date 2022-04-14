@@ -10,7 +10,7 @@ class CocoDataModule(ImageTextDataModule):
     def __init__(self, batch_size: int = 32) -> None:
         super().__init__()
 
-        self.batch_size = batch_sizes
+        self.batch_size = batch_size
 
         self.full_dir = 'val2017'
         self.full_url = 'http://images.cocodataset.org/zips/val2017.zip'

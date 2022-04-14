@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-from torch import Tensor, cat, save, load
-=======
 from torch import Tensor, save, load, round
->>>>>>> 15fde617b520696e3bfd8f72feb49a0e34302603
 from torch.nn import Linear, Dropout, Sigmoid, BCELoss, TransformerDecoder, TransformerDecoderLayer
 from torch.optim import Adam, Optimizer
 from torch.optim.lr_scheduler import ReduceLROnPlateau
