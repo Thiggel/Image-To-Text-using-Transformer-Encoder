@@ -68,6 +68,8 @@ class CocoDataModule(LightningDataModule):
 
         self.tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 
+        self.setup()
+
     @staticmethod
     def split_dataset(dataset: VisionDataset) -> List[Subset[VisionDataset]]:
         train_size = int(len(dataset) // 1.43)

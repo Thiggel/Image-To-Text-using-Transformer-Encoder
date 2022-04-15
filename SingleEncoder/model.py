@@ -102,10 +102,25 @@ class Model(LightningModule):
 
         # + 1 for the class tokens
         images_mask = Tensor([True]).repeat(text.shape[0], num_patches + 1)
+        print("Images Mask Device: ")
+	try:
+	    print("Cuda: ", images_mask.get_device())
+	else:
+	    print("CPU")
 
         captions_mask = text != self.pad_token
+        print("Captions Mask Device: ")
+	try:
+	    print("Cuda: ", captions_mask.get_device())
+        else:
+	    print("CPU")
 
         full_mask = cat((images_mask, captions_mask), dim=1)
+	print("Full Mask Device: ")
+	try:
+	    print("Cuda: ", full_mask.get_device())
+	else:
+	    print("CPU")
 
         return full_mask
 
