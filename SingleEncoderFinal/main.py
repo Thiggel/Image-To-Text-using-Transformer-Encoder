@@ -15,7 +15,7 @@ def main():
 
     model = UnifiedTransformer(
         input_shape=(1, 28, 28),
-        patch_size=(4, 4),
+        patch_size=(14, 14),
         embed_dim=20,
         n_heads=2,
         output_dim=1,
