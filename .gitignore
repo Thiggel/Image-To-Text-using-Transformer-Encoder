@@ -17,3 +17,5 @@ study.db
 *.job
 *.log
 *.ckpt
+datasets/MNIST
+test2017

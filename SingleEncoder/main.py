@@ -20,7 +20,7 @@ if __name__ == '__main__':
     )
 
     trainer = Trainer(
-        max_epochs=40,
+        max_epochs=500,
         gpus=(-1 if cuda.is_available() else 0)
     )
 

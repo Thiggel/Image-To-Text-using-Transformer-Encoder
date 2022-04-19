@@ -1,5 +1,5 @@
 from pytorch_lightning import LightningModule
-from torch.nn import Embedding, Linear, Sigmoid, Softmax, Parameter, Dropout, CrossEntropyLoss, BCELoss
+from torch.nn import Embedding, Linear, Sigmoid, Softmax, Parameter, CrossEntropyLoss, BCELoss
 from torch import Tensor, zeros, cat, round, save, load
 from typing import Tuple, List
 from transformer_encoder import TransformerEncoder
@@ -53,11 +53,9 @@ class Model(LightningModule):
 
         self.output_activation = Softmax(dim=1) if output_dim > 1 else Sigmoid()
 
-        self.dropout = Dropout(dropout)
-
         self.optimizer = Adam(self.parameters(), lr=learning_rate)
 
-        self.scheduler = LinearWarmupCosineAnnealingLR(self.optimizer, warmup_epochs=10, max_epochs=40)
+        self.scheduler = LinearWarmupCosineAnnealingLR(self.optimizer, warmup_epochs=10, max_epochs=200)
 
         self.loss_fn = CrossEntropyLoss() if output_dim > 1 else BCELoss()
 
@@ -95,32 +93,17 @@ class Model(LightningModule):
             class_probs = class_probs.flatten()
 
         # add dropout to prevent overfitting
-        return self.dropout(class_probs)
+        return class_probs
 
     def create_pad_mask(self, text: Tensor) -> Tensor:
         num_patches = self.image_embedding.num_patches
 
         # + 1 for the class tokens
         images_mask = Tensor([True]).repeat(text.shape[0], num_patches + 1)
-        print("Images Mask Device: ")
-	try:
-	    print("Cuda: ", images_mask.get_device())
-	else:
-	    print("CPU")
 
         captions_mask = text != self.pad_token
-        print("Captions Mask Device: ")
-	try:
-	    print("Cuda: ", captions_mask.get_device())
-        else:
-	    print("CPU")
 
-        full_mask = cat((images_mask, captions_mask), dim=1)
-	print("Full Mask Device: ")
-	try:
-	    print("Cuda: ", full_mask.get_device())
-	else:
-	    print("CPU")
+        full_mask = cat((images_mask.cuda(), captions_mask.cuda()), dim=1)
 
         return full_mask
 

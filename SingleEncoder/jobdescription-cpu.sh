@@ -1,13 +1,12 @@
 #!/bin/bash
 
-#SBATCH --job-name=SingleEncoderTransformer
+#SBATCH --job-name=SingleEncoderTransformer-CPU
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=f.m.de.sousa.horta.osorio.laitenberger@student.rug.nl
 #SBATCH --output=job-%j.log
-#SBATCH --time=3-00:00:00
-#SBATCH --partition=gpu
-#SBATCH --gres=gpu:v100:1
-#SBATCH --ntasks-per-node=12
+#SBATCH --time=7-00:00:00
+#SBATCH --ntasks-per-node=24
+#SBATCH --nodes=10
 #SBATCH --mem=64G
 
 module purge
