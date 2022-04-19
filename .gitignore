@@ -19,3 +19,4 @@ study.db
 *.ckpt
 datasets/MNIST
 test2017
+*.pt
