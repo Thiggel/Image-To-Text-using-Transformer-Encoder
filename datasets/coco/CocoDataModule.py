@@ -14,7 +14,11 @@ class CocoDataModule(ImageTextDataModule):
 
         self.full_dir = 'test2017'
         self.full_url = 'http://images.cocodataset.org/zips/test2017.zip'
+<<<<<<< HEAD
         self.full_annotations_file = 'annotations/captions_train2017.json'
+=======
+        self.full_annotations_file = 'annotations/captions_test2017.json'
+>>>>>>> 930ed0b963037cfc37e64d998b378adf9bce6c26
 
         self.annotations_dir = 'annotations'
         self.annotations_url = 'http://images.cocodataset.org/annotations/annotations_trainval2017.zip'
