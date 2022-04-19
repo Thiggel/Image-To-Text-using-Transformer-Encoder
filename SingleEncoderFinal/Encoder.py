@@ -1,5 +1,5 @@
 from numpy import sin, cos
-from torch import ones
+from torch import ones, device, cuda
 from torch import Tensor, device as Device
 from torch.nn import Module, \
     Sequential, \
@@ -37,6 +37,8 @@ class Encoder(Module):
             ReLU()
         )
 
+        self.dev = device("cuda:0" if cuda.is_available() else "cpu")
+
     def get_positional_embeddings(self) -> Tensor:
         result = ones(self.sequence_length, self.embed_dim)
 
@@ -49,7 +51,7 @@ class Encoder(Module):
         return result
 
     def forward(self, tokens: Tensor) -> Tensor:
-        tokens += self.get_positional_embeddings().repeat(tokens.shape[0], 1, 1)
+        tokens += self.get_positional_embeddings().repeat(tokens.shape[0], 1, 1).to(self.dev)
 
         out = tokens + self.attention(self.norm1(tokens))
 

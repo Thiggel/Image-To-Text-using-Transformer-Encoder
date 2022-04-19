@@ -1,4 +1,4 @@
-from torch import cat, hstack, unsqueeze
+from torch import cat, hstack, unsqueeze, device, cuda
 from torch.nn import Module, \
     Linear, \
     Softmax
@@ -19,6 +19,8 @@ class MultiHeadAttention(Module):
         self.d_head = d_head
         self.softmax = Softmax(dim=-1)
 
+        self.dev = device("cuda:0" if cuda.is_available() else "cpu")
+
     def forward(self, sequences):
         # Sequences has shape (N, seq_length, token_dim)
         # We go into shape    (N, seq_length, n_heads, token_dim / n_heads)
@@ -27,9 +29,9 @@ class MultiHeadAttention(Module):
         for sequence in sequences:
             seq_result = []
             for head in range(self.n_heads):
-                q_mapping = self.q_mappings[head]
-                k_mapping = self.k_mappings[head]
-                v_mapping = self.v_mappings[head]
+                q_mapping = self.q_mappings[head].to(self.dev)
+                k_mapping = self.k_mappings[head].to(self.dev)
+                v_mapping = self.v_mappings[head].to(self.dev)
 
                 seq = sequence[:, head * self.d_head: (head + 1) * self.d_head]
                 q, k, v = q_mapping(seq), k_mapping(seq), v_mapping(seq)

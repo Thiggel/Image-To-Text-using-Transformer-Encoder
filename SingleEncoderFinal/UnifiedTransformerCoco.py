@@ -1,6 +1,6 @@
 from torch import rand, stack, vstack, ones, zeros, cat
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS
-from torch import Tensor
+from torch import Tensor, device, cuda
 from pytorch_lightning import LightningModule
 from torch.nn import Sequential, \
     Linear, \
@@ -35,6 +35,8 @@ class UnifiedTransformer(LightningModule):
     ):
         super(UnifiedTransformer, self).__init__()
 
+        self.dev = device("cuda:0" if cuda.is_available() else "cpu")
+
         self.data_module = CocoDataModule(
             train_images_dir='../train2017',
             train_annotations_file='../annotations/captions_train2017.json',
@@ -56,7 +58,7 @@ class UnifiedTransformer(LightningModule):
 
         self.class_token = Parameter(rand(1, embed_dim))
 
-        self.encoder = Encoder(self.sequence_length, input_shape, n_heads, embed_dim)
+        self.encoder = Encoder(self.sequence_length, input_shape, n_heads, embed_dim).to(self.dev)
 
         self.MLP = Sequential(
             Linear(embed_dim, output_dim),
@@ -95,6 +97,7 @@ class UnifiedTransformer(LightningModule):
 
     def training_step(self, batch: Tensor, _: int) -> Tensor:
         [x, y], targets = batch
+        x, y, targets = x.to(self.dev), y.to(self.dev), targets.to(self.dev)
 
         y_hat = self(x, y)
         loss = self.loss_fn(y_hat, targets.float())
@@ -102,7 +105,8 @@ class UnifiedTransformer(LightningModule):
         return loss
 
     def validation_step(self, batch: Tensor, _: int) -> Tuple[Tensor, Tensor]:
-        [x, y], targets = batch
+        [x, y], targets = batch 
+        x, y, targets = x.to(self.dev), y.to(self.dev), targets.to(self.dev)
 
         y_hat = self(x, y)
         loss = self.loss_fn(y_hat, targets.float())

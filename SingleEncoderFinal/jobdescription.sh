@@ -4,7 +4,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=f.m.de.sousa.horta.osorio.laitenberger@student.rug.nl
 #SBATCH --output=job-%j.log
-#SBATCH --time=0-01:00:00
+#SBATCH --time=3-00:00:00
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:v100:1
 #SBATCH --ntasks-per-node=12
@@ -17,4 +17,4 @@ module load Boost/1.66.0-foss-2018a-Python-3.6.4
 
 source /data/$USER/.envs/python386-bachelors/bin/activate
 
-python3 main.py
+python3 main_coco.py
