@@ -6,11 +6,16 @@ from EarlyStopping import EarlyStopping
 
 
 class Trainer:
-    def __init__(self, model: LightningModule, n_epochs: int = 5) -> None:
+    def __init__(
+            self,
+            model: LightningModule,
+            n_epochs: int = 5,
+            checkpoint_filename: str = 'checkpoint.pt'
+    ) -> None:
         self.model = model
         self.n_epochs = n_epochs
 
-        self.early_stopping = EarlyStopping(patience=10, verbose=True)
+        self.early_stopping = EarlyStopping(patience=10, verbose=True, path=checkpoint_filename)
 
     def fit(self) -> None:
         for epoch in range(self.n_epochs):
@@ -34,6 +39,8 @@ class Trainer:
                 print("Early stopping")
                 break
 
+            self.model.scheduler.step()
+
     def test_validate(self, dataloader: DataLoader) -> Tuple[float, float]:
         test_accuracy = 0.0
         test_loss = 0.0
@@ -56,10 +63,12 @@ class Trainer:
         print(f"Validation loss: {test_loss:.2f}")
         print(f"Validation accuracy: {test_accuracy * 100:.2f}%")
 
-    def test(self) -> None:
+    def test(self) -> float:
         self.model.load_state_dict(load('checkpoint.pt'))
 
         test_loss, test_accuracy = self.test_validate(self.model.val_dataloader())
 
         print(f"Test loss: {test_loss:.2f}")
         print(f"Test accuracy: {test_accuracy * 100:.2f}%")
+
+        return test_loss

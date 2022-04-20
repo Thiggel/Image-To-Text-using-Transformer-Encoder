@@ -1,5 +1,4 @@
-from torch import rand, stack, vstack, ones, zeros, cat
-from pytorch_lightning.utilities.types import EVAL_DATALOADERS
+from torch import rand, stack, vstack, cat
 from torch import Tensor, device, cuda
 from pytorch_lightning import LightningModule
 from torch.nn import Sequential, \
@@ -10,9 +9,9 @@ from torch.nn import Sequential, \
     Parameter, \
     BCELoss, \
     CrossEntropyLoss
-from torch.optim import Adam, Optimizer
+from torch.optim import Adam
+from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader
-import random
 from typing import Tuple
 from torchmetrics import Accuracy
 
@@ -22,18 +21,18 @@ from PatchEmbedding import PatchEmbedding
 from Encoder import Encoder
 
 
-class UnifiedTransformer(LightningModule):
+class UnifiedTransformerCoco(LightningModule):
     def __init__(
             self,
             input_shape: Tuple[int, int, int] = (1, 28, 28),
             patch_size: Tuple[int, int] = (4, 4),
-            text_length: int = 1,
+            conv_layers: int = 0,
             embed_dim: int = 8,
             n_heads: int = 2,
             output_dim: int = 1,
             learning_rate: float = 1e-3
     ):
-        super(UnifiedTransformer, self).__init__()
+        super(UnifiedTransformerCoco, self).__init__()
 
         self.dev = device("cuda:0" if cuda.is_available() else "cpu")
 
@@ -50,7 +49,7 @@ class UnifiedTransformer(LightningModule):
 
         self.output_dim = output_dim
 
-        self.patch_embedding = PatchEmbedding(input_shape, patch_size, embed_dim)
+        self.patch_embedding = PatchEmbedding(input_shape, patch_size, embed_dim, conv_layers)
 
         self.sequence_length = self.patch_embedding.n_patches + self.text_length + 1
 
@@ -66,6 +65,7 @@ class UnifiedTransformer(LightningModule):
         )
 
         self.optimizer = Adam(self.parameters(), lr=learning_rate)
+        self.scheduler = CosineAnnealingLR(self.optimizer, T_max=60, verbose=True)
         self.loss_fn = BCELoss() if output_dim == 1 else CrossEntropyLoss()
 
         self.accuracy = Accuracy()
@@ -91,9 +91,6 @@ class UnifiedTransformer(LightningModule):
             output = output.flatten()
 
         return output
-
-    def configure_optimizers(self) -> Optimizer:
-        return self.optimizer
 
     def training_step(self, batch: Tensor, _: int) -> Tensor:
         [x, y], targets = batch

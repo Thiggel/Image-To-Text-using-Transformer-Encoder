@@ -2,6 +2,7 @@ from torch import rand, stack, vstack, ones, zeros, cat
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS
 from torch import Tensor
 from pytorch_lightning import LightningModule
+from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.nn import Sequential, \
     Linear, \
     Softmax, \
@@ -10,7 +11,7 @@ from torch.nn import Sequential, \
     Parameter, \
     BCELoss, \
     CrossEntropyLoss
-from torch.optim import Adam, Optimizer
+from torch.optim import Adam
 from torch.utils.data import DataLoader, random_split
 import random
 from typing import Tuple
@@ -23,7 +24,7 @@ from PatchEmbedding import PatchEmbedding
 from Encoder import Encoder
 
 
-class UnifiedTransformer(LightningModule):
+class UnifiedTransformerMnist(LightningModule):
     def __init__(
             self,
             input_shape: Tuple[int, int, int] = (1, 28, 28),
@@ -36,7 +37,7 @@ class UnifiedTransformer(LightningModule):
             output_dim: int = 1,
             learning_rate: float = 1e-3
     ):
-        super(UnifiedTransformer, self).__init__()
+        super(UnifiedTransformerMnist, self).__init__()
 
         self.output_dim = output_dim
 
@@ -56,6 +57,7 @@ class UnifiedTransformer(LightningModule):
         )
 
         self.optimizer = Adam(self.parameters(), lr=learning_rate)
+        self.scheduler = CosineAnnealingLR(self.optimizer, 60, verbose=True)
         self.loss_fn = BCELoss() if output_dim == 1 else CrossEntropyLoss()
 
         self.accuracy = Accuracy()
@@ -87,9 +89,6 @@ class UnifiedTransformer(LightningModule):
             output = output.flatten()
 
         return output
-
-    def configure_optimizers(self) -> Optimizer:
-        return self.optimizer
 
     @staticmethod
     def create_random_true_false_batch(batch: Tensor) -> Tuple[Tensor, Tensor]:
