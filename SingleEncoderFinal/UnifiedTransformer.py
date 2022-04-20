@@ -28,6 +28,7 @@ class UnifiedTransformer(LightningModule):
             self,
             input_shape: Tuple[int, int, int] = (1, 28, 28),
             patch_size: Tuple[int, int] = (4, 4),
+            conv_layers: int = 0,
             text_length: int = 1,
             embed_dim: int = 8,
             n_heads: int = 2,
@@ -39,7 +40,7 @@ class UnifiedTransformer(LightningModule):
 
         self.output_dim = output_dim
 
-        self.patch_embedding = PatchEmbedding(input_shape, patch_size, embed_dim)
+        self.patch_embedding = PatchEmbedding(input_shape, patch_size, embed_dim, conv_layers)
 
         self.sequence_length = self.patch_embedding.n_patches + text_length + 1
 

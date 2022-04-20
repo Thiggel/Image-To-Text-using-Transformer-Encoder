@@ -25,7 +25,8 @@ class Trainer:
 
             print(f"Epoch {epoch + 1}/{self.n_epochs} loss: {train_loss:.2f}")
 
-            cuda.memory_summary(device=None, abbreviated=False)
+            if cuda.is_available():
+                cuda.memory_summary(device=None, abbreviated=False)
 
             self.validate()
 
