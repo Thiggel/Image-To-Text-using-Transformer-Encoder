@@ -55,14 +55,14 @@ class PatchEmbedding(Module):
             .unfold(3, self.patch_size[0], self.patch_size[1]) \
             .flatten(2, 3)
 
-        print(patches.shape)
+        #print(patches.shape)
 
-        if self.conv_layers != 0:
-            patches = self.conv(patches)
+        #if self.conv_layers != 0:
+        #    patches = self.conv(patches)
 
         patches = patches.transpose(1, 2).flatten(2, 4)
 
-        print(patches.shape)
-        exit()
+        #print(patches.shape)
+        #exit()
 
         return self.linear_projection(patches)

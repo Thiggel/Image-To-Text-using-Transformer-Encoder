@@ -10,7 +10,7 @@ manual_seed(0)
 
 
 def main():
-    N_EPOCHS = 5
+    N_EPOCHS = 50
     LR = 0.01
 
     model = UnifiedTransformer(
